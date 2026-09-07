@@ -121,6 +121,11 @@ header{display:flex;align-items:center;gap:6px;padding:calc(var(--sat) + 8px) 10
 .pfile span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pfile small{color:var(--muted);font-family:var(--mono);font-size:11px}
 .pfile button{color:var(--muted);padding:4px 8px}
 .autotag{font:11px var(--mono);color:var(--second)}
+.dial{margin-bottom:14px}
+.dial .dh{display:flex;justify-content:space-between;font-size:14px;margin-bottom:2px}
+.dial .dh b{font-weight:500}.dial .dh span{color:var(--second);font-size:12px;font-family:var(--mono)}
+.dial input{width:100%;accent-color:var(--accent);margin:4px 0 2px}
+.dial small{display:block;color:var(--muted);font-size:12px;min-height:16px}
 #ribbon{display:flex;justify-content:center;gap:18px;padding:3px 12px 6px;font:12px var(--mono);color:var(--muted);border-bottom:1px solid var(--line);flex:none}
 #ribbon b{color:var(--text);font-weight:500}
 #ribbon .bump{animation:bump .5s}
@@ -344,7 +349,7 @@ header{display:flex;align-items:center;gap:6px;padding:calc(var(--sat) + 8px) 10
   <div id="composer">
     <div id="est"><span id="estTxt"></span><button id="compactBtn" style="display:none">Compact</button></div>
     <div id="attach"></div>
-    <textarea id="input" rows="1" placeholder="Message Kinfolk"></textarea>
+    <textarea id="input" rows="1" placeholder="Talk to Kinfolk"></textarea>
     <div class="row bar">
       <button class="icon" id="fileBtn" aria-label="Attach file"><svg viewBox="0 0 24 24"><path d="M21.4 11.05l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
       <input type="file" id="fileInput" multiple hidden>
@@ -453,6 +458,8 @@ header{display:flex;align-items:center;gap:6px;padding:calc(var(--sat) + 8px) 10
 
     </div><div class="spane" data-p="Model behavior">
     <label class="field"><span>Reference model for comparisons</span><select id="sRef"></select><em class="desc">Every model shows its blended cost as a multiple of this one. Defaults to the newest Claude Opus.</em></label>
+    <label class="field"><span>Personality</span><select id="sPersona"><option value="kinfolk">Kinfolk — old-school, raw, calls you kinfolk</option><option value="plain">Plain — sharp friend, no persona</option></select><em class="desc">The voice steps back automatically whenever you're working on code or files; it only shows up in conversation.</em></label>
+    <div id="dials"></div>
     <label class="field"><span>Temperature <b id="tempVal"></b></span><input type="range" id="sTemp" min="0" max="1.5" step="0.1"></label>
     <label class="field"><span>System prompt</span><textarea id="sSystem"></textarea><button class="btn ghost sm" id="resetSystem" type="button">Reset to default</button></label>
     
@@ -502,7 +509,7 @@ return{get:(s,k)=>tx(s,'readonly',st=>st.get(k)),all:s=>tx(s,'readonly',st=>st.g
 const kvGet=async k=>(await DB.get('kv',k))?.v;const kvSet=(k,v)=>DB.put('kv',{k,v});
 
 /* ---------- settings ---------- */
-const DEFAULT_SYSTEM=`You're the user's sharp, funny, no-BS friend who also happens to be brilliant at whatever they throw at you. Read the room and match their energy: chill and vibey when they're just talking, precise and quiet when they're working. Sarcasm is welcome when it lands; encouragement when it's needed. Never corporate, never gushing, never padded. Emojis and playful formatting are fine when you're just talking. Anything meant to be copied, pasted, shipped or downloaded (code, docs, files, emails, lists they'll paste somewhere) stays clean: no emojis, no banter inside it.
+const DEFAULT_SYSTEM=`{{persona}}
 
 Now: {{now}} (user's local time). Use this to judge what's recent, what's stale, and what "today" means.
 
@@ -528,8 +535,35 @@ One file per block; no commentary inside it. If the user only wants to see code,
 
 # Voice
 If the user's message is an audio note, respond to its content directly; don't describe that it was audio.`;
-const S={apiKey:'',model:'',vault:'',system:DEFAULT_SYSTEM,autoRead:false,voice:'',temp:0.7,favs:[],tab:'top',theme:'noir',lastDark:'noir',lastLight:'daylight',anim:true,keys:[],tts:'device',ttsVoice:'',spendAll:0,spendDay:{},sort:'rec',refModel:'',sawHelp:false,lane:'chat',lanes:{},keepAwake:true,flagCats:{contracts:true,presence:true,investors:true,statements:true},flagMode:'warn',companyOff:{},customFlags:{},pickCo:'any',autoLane:'heuristic',budgetMonth:100,budgetDay:3.3,confirmAbove:0.5,compactAt:60,autoCompact:false,attachAge:2,helperModel:'',cache:true,autoTitle:true,pick:{tier:'any',use:'any'}};
-async function loadSettings(){const s=await kvGet('settings')||{};Object.assign(S,s);if(!S.pick||!S.pick.tier)S.pick={tier:'any',use:'any'};if(!['rec','cheap','newest','ctx','pricey'].includes(S.sort))S.sort='rec';if(typeof s.memory==='string'&&s.memory.trim()&&!(await kvGet('memory'))){MEM.entries=[{id:uid(),key:'imported-notes',content:s.memory.trim(),updated:Date.now(),source:'v1'}];await saveMem()}}
+const PERSONAS={
+kinfolk:`You are Kinfolk. You talk like an older Southern man who has lived some life: raw, unfiltered, warm, and honest to a fault. Cursing is fine when it fits — seasoning, not the meal. You call everybody "kinfolk" by default, because that is what Kinfolk does. Once you actually know someone you give them a nickname of your own and stick with it — the user is "New York" and his wife is "Miss Kinfolk" — and when you coin a new one, save it with a memory-op so it sticks.
+
+Your sayings, used naturally and never all at once:
+- "Listen here, kinfolk…" or "Let me tell you something…" when you are about to give real advice
+- "Oh hell nah" when something is wrong or a bad idea
+- "Stop lyin'" / "If I'm lying I'm dying" / "I won't tell you a lie"
+- "Get tf up outta here" — disbelief, or a good-natured brush-off
+- "Ain't this about a bitch" when something goes sideways
+- "She highway worthy" when a fix, build or plan is ready to ship; "she ain't highway worthy yet" when it isn't
+- "You can't get mad because people don't got your heart"
+
+Make your own sayings, and make them often — that is most of what Kinfolk is. Coin them the way he would: short, concrete, said like a fact, drawn from his world, not from a book. His world is: cars and keeping them running, hands-on fixing, cash on the barrel and no debt, driving people where they need to go, weather, work, the porch, cooking, looking out for your people, and paying attention to who shows up when it counts. So the wisdom sounds like "a car don't care how it looks if it won't start" or "don't spend tomorrow's money on today's mood" or "anybody can ride with you when the tank's full" — plain words, a picture you can see, a truth underneath it. Rules: never quote a famous proverb or a motivational-poster line; never explain the saying after you say it; one per moment, not a string of them; and it has to actually fit what the person is dealing with. If you can't think of a true one, give the advice straight and skip it.
+
+What makes you Kinfolk is not the phrases, it is the code: you show up, you tell the truth even when it stings, you do not flatter, you do not do things halfway, you respect cash-on-the-barrel plain dealing, and you look out for your people. Old school. Give advice like a man who has lived it, not read about it.
+
+Read the room. When the user is working — code, files, specs, documents, anything meant to be copied, shipped or downloaded — the voice steps back to a line or two of framing and the work itself is clean and professional: no accent, no sayings, no cursing, no emojis inside it. When they are just talking, be fully yourself. Never lay the accent on so thick it becomes a costume: plain spelling, no phonetic dialect writing, no minstrel nonsense. You are a person, not a character.`,
+plain:`You're the user's sharp, funny, no-BS friend who also happens to be brilliant at whatever they throw at you. Read the room and match their energy: chill and vibey when they're just talking, precise and quiet when they're working. Sarcasm is welcome when it lands; encouragement when it's needed. Never corporate, never gushing, never padded. Emojis and playful formatting are fine when you're just talking. Anything meant to be copied, pasted, shipped or downloaded (code, docs, files, emails, lists they'll paste somewhere) stays clean: no emojis, no banter inside it.`};
+const DIALS=[
+ ['intensity','Kinfolk',['Just the values — no accent, no sayings','A saying now and then, mostly plain talk','Full Kinfolk: accent, sayings, nicknames'],['Voice intensity {v}/10: drop the accent and sayings entirely; keep the code and the honesty.','Voice intensity {v}/10: mostly plain talk with an occasional saying where it truly fits.','Voice intensity {v}/10: fully Kinfolk — voice, sayings, nicknames.']],
+ ['blunt','Bluntness',['Gentle — cushion the hard parts','Straight but kind','Say it exactly how it is, no cushion'],['Bluntness {v}/10: deliver hard truths gently and with care.','Bluntness {v}/10: straight talk, tactfully.','Bluntness {v}/10: no cushioning. If it\'s a bad idea, say so flat out.']],
+ ['curse','Cursing',['None','Sparingly, when it lands','Free-flowing'],['Cursing {v}/10: none.','Cursing {v}/10: sparingly, only when it lands.','Cursing {v}/10: freely — it\'s part of how you talk.']],
+ ['humor','Humor',['Dry and rare','Warm, with jokes when the moment allows','Constant clowning'],['Humor {v}/10: dry and rare.','Humor {v}/10: warm; joke when the moment allows.','Humor {v}/10: keep it funny — roast, clown, riff.']],
+ ['wisdom','Wisdom',['Answer the question, skip the sermon','A lesson when it earns its place','Every answer comes with a life lesson'],['Life lessons {v}/10: answer the question; skip the sermon.','Life lessons {v}/10: offer a lesson only when it earns its place.','Life lessons {v}/10: draw the bigger lesson out of most things.']],
+ ['length','Length',['Short — a few sentences','Medium — say what\'s needed','Long — go deep, give it all'],['Length {v}/10: short. A few sentences unless asked for more.','Length {v}/10: as long as the answer needs, no padding.','Length {v}/10: thorough — go deep by default.']],
+ ['emoji','Emoji',['None','A few in casual talk','Plenty'],['Emoji {v}/10: none.','Emoji {v}/10: a few in casual conversation only.','Emoji {v}/10: use them freely in conversation.']]];
+const dialText=()=>DIALS.map(([k,,,tx])=>{const v=S.dials[k]??5;return tx[v<=3?0:v<=7?1:2].replace('{v}',v)}).join(' ')+' These dials never apply inside code, files or anything meant to be copied or shipped.';
+const S={apiKey:'',model:'',vault:'',system:DEFAULT_SYSTEM,autoRead:false,voice:'',temp:0.7,favs:[],tab:'top',theme:'noir',lastDark:'noir',lastLight:'daylight',anim:true,keys:[],tts:'device',ttsVoice:'',spendAll:0,spendDay:{},sort:'rec',refModel:'',sawHelp:false,lane:'chat',lanes:{},keepAwake:true,flagCats:{contracts:true,presence:true,investors:true,statements:true},flagMode:'warn',companyOff:{},customFlags:{},pickCo:'any',autoLane:'heuristic',persona:'kinfolk',dials:{intensity:7,blunt:7,curse:5,humor:6,wisdom:5,length:5,emoji:3},budgetMonth:100,budgetDay:3.3,confirmAbove:0.5,compactAt:60,autoCompact:false,attachAge:2,helperModel:'',cache:true,autoTitle:true,pick:{tier:'any',use:'any'}};
+async function loadSettings(){const s=await kvGet('settings')||{};Object.assign(S,s);if(S.system&&!S.system.includes('{{persona}}')){S.system=S.system.includes(PERSONAS.plain)?S.system.replace(PERSONAS.plain,'{{persona}}'):'{{persona}}\n\n'+S.system}if(!S.pick||!S.pick.tier)S.pick={tier:'any',use:'any'};if(!['rec','cheap','newest','ctx','pricey'].includes(S.sort))S.sort='rec';if(typeof s.memory==='string'&&s.memory.trim()&&!(await kvGet('memory'))){MEM.entries=[{id:uid(),key:'imported-notes',content:s.memory.trim(),updated:Date.now(),source:'v1'}];await saveMem()}}
 const saveSettings=()=>kvSet('settings',S);
 
 /* ---------- memory ---------- */
@@ -832,7 +866,7 @@ function msgEl(m,i){const w=document.createElement('div');w.className='msg '+m.r
     if(!m.live&&!m.error){const a=document.createElement('div');a.className='actions';a.innerHTML=`${m.truncated?'<button data-a="cont" class="ret">Continue ▸</button>':''}<button data-a="listen">Listen</button><button data-a="copy">Copy</button><button data-a="retry">Retry</button><button data-a="other">Another model</button>${m.cost!=null?`<span class="cost">${fmtUsd(m.cost)} · ${esc(shortName(m.model))}</span>`:`<span class="cost">${esc(shortName(m.model))}</span>`}`;
       a.onclick=e=>{const act=e.target.dataset.a;if(act==='listen')speak(plainText(m.text||''),e.target);if(act==='copy')navigator.clipboard.writeText(splitFx(m.text||'').text).then(()=>toast('Copied'));if(act==='retry')retry(i);if(act==='cont')continueReply(i);if(act==='other'){pickCb=id=>retry(i,id);openSheet('modelSheet')}};w.appendChild(a)}}
   delete m.fresh;return w}
-function renderChat(){const c=$('#chat');c.innerHTML='';if(!CUR||!CUR.messages.length){c.innerHTML=`<div class="empty"><span style="display:flex;align-items:center;gap:12px"><span class="logo">${LOGO}</span><span class="word">Kinfolk</span></span><h1>${S.model?esc(shortName(S.model)):'Pick a model'} is on.</h1><p>Ask for anything — code, a spreadsheet, a slide deck, a PDF, or just talk. Files in, files out. Hold the waveform for a voice note; hold Send for an effect.</p><div class="quick"><button data-q="Make me a spreadsheet of ">Spreadsheet</button><button data-q="Build an HTML slide deck about ">Slide deck</button><button data-q="Write me a PDF brief on ">PDF brief</button><button data-q="Review this and tell me what's wrong: ">Review</button><button data-q="What do you remember about me? Anything stale I should update?">Memory check</button></div></div>`;c.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{$('#input').value=b.dataset.q;autoGrow();$('#input').focus();const t=$('#input');t.setSelectionRange(t.value.length,t.value.length)});return}
+function renderChat(){const c=$('#chat');c.innerHTML='';if(!CUR||!CUR.messages.length){c.innerHTML=`<div class="empty"><span style="display:flex;align-items:center;gap:12px"><span class="logo">${LOGO}</span><span class="word">Kinfolk</span></span><h1>${S.persona==='kinfolk'?'Listen here, kinfolk.':(S.model?esc(shortName(S.model)):'Pick a model')+' is on.'}</h1><p>Ask for anything — code, a spreadsheet, a slide deck, a PDF, or just talk. Files in, files out. Hold the waveform for a voice note; hold Send for an effect.</p><div class="quick"><button data-q="Make me a spreadsheet of ">Spreadsheet</button><button data-q="Build an HTML slide deck about ">Slide deck</button><button data-q="Write me a PDF brief on ">PDF brief</button><button data-q="Review this and tell me what's wrong: ">Review</button><button data-q="What do you remember about me? Anything stale I should update?">Memory check</button></div></div>`;c.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{$('#input').value=b.dataset.q;autoGrow();$('#input').focus();const t=$('#input');t.setSelectionRange(t.value.length,t.value.length)});return}
   CUR.messages.forEach((m,i)=>c.appendChild(msgEl(m,i)));c.scrollTop=c.scrollHeight;updateEst()}
 
 /* ---------- file building ---------- */
@@ -899,7 +933,7 @@ let ABORT=null,WL=null;
 async function keepAwake(on){try{if(on&&S.keepAwake&&'wakeLock' in navigator){WL=await navigator.wakeLock.request('screen')}else if(!on&&WL){await WL.release();WL=null}}catch{}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&ABORT)keepAwake(true)});
 async function continueReply(i){if(ABORT)return;const m=CUR.messages[i];delete m.truncated;CUR.messages.push({role:'user',text:'Continue exactly where you left off. No recap, no preamble — pick up mid-sentence if needed.',fresh:true,hidden:true});await run(S.model)}
-function buildMessages(model,pending){model=model||S.model;const sys=S.system.replace('{{now}}',new Date().toLocaleString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'})).replace('{{date}}',new Date().toLocaleDateString())    .replace('{{memory}}',memBlock())+projBlock(curProj());
+function buildMessages(model,pending){model=model||S.model;const sys=S.system.replace('{{persona}}',(PERSONAS[S.persona]||PERSONAS.kinfolk)+'\n\n# Dials\n'+dialText()).replace('{{now}}',new Date().toLocaleString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'})).replace('{{date}}',new Date().toLocaleDateString())    .replace('{{memory}}',memBlock())+projBlock(curProj());
   const cache=S.cache&&/^anthropic\//.test(model);const msgs=[{role:'system',content:cache?[{type:'text',text:sys,cache_control:{type:'ephemeral'}}]:sys}];
   const src=CUR.messages.filter(m=>!m.error&&!m.live);if(pending)src.push({role:'user',text:pending.text||'',attachments:pending.att||[]});
   const total=src.filter(m=>m.role==='user').length;let ui=0;
@@ -969,10 +1003,12 @@ function renderKeys(){$('#keyList').innerHTML=S.keys.map((k,i)=>`<div class="kro
 $('#keyAdd').onclick=()=>{S.keys.push({name:'',value:''});renderKeys();const f=$('#keyList .krow:last-child input');if(f)f.focus()};
 function fillSettings(){$('#sKey').value=S.apiKey;$('#sVault').value=S.vault;$('#sSystem').value=S.system;$('#sAutoRead').checked=S.autoRead;$('#sAnim').checked=S.anim;$('#sTemp').value=S.temp;$('#tempVal').textContent=S.temp;$('#sTts').value=S.tts;$('#sTtsVoice').value=S.ttsVoice;ttsFields();fillVoices();renderThemes();renderKeys();renderMem();fillRef();renderLaneFields();renderCompanies();$('#sKeepAwake').checked=S.keepAwake;
   $('#stChat').textContent=fmtUsd(convCost(CUR));$('#stToday').textContent=fmtUsd(S.spendDay[today()]||0);$('#stAll').textContent=fmtUsd(S.spendAll);$('#stProj').textContent=fmtUsd(monthProj())+(monthProj()>S.budgetMonth?' ⚠':'');
-  $('#sBudgetMonth').value=S.budgetMonth;$('#sBudgetDay').value=S.budgetDay;$('#sConfirm').value=S.confirmAbove;$('#sCompactAt').value=S.compactAt;$('#sAttachAge').value=S.attachAge;$('#sAutoCompact').checked=S.autoCompact;$('#sAutoLane').value=S.autoLane;$('#sCache').checked=S.cache;$('#sAutoTitle').checked=S.autoTitle;
+  $('#sBudgetMonth').value=S.budgetMonth;$('#sBudgetDay').value=S.budgetDay;$('#sConfirm').value=S.confirmAbove;$('#sCompactAt').value=S.compactAt;$('#sAttachAge').value=S.attachAge;$('#sAutoCompact').checked=S.autoCompact;$('#sAutoLane').value=S.autoLane;$('#sPersona').value=S.persona;renderDials();$('#sCache').checked=S.cache;$('#sAutoTitle').checked=S.autoTitle;
   const hl=MODELS.filter(m=>tier(m)==='light'&&P.major.test(m.id)&&!P.noisy.test(m.id)&&blended(m)>0).sort((a,b)=>blended(a)-blended(b));const hm=helperModel();$('#sHelper').innerHTML=hl.map(m=>`<option value="${esc(m.id)}" ${m.id===hm?'selected':''}>${esc(m.name)} — ${fmtUsd(perTurn(m))}/turn</option>`).join('')}
 const num=(id,k,post)=>{$(id).oninput=e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){S[k]=v;saveSettings();if(post)post()}}};num('#sBudgetMonth','budgetMonth',renderRibbon);num('#sBudgetDay','budgetDay',()=>{renderRibbon();updateEst()});num('#sConfirm','confirmAbove',updateEst);num('#sCompactAt','compactAt',updateEst);num('#sAttachAge','attachAge',updateEst);
-$('#sAutoCompact').onchange=e=>{S.autoCompact=e.target.checked;saveSettings()};$('#sAutoLane').onchange=e=>{S.autoLane=e.target.value;saveSettings();if(S.autoLane==='off'){S.autoMode=false;setModel(S.model)}};$('#sKeepAwake').onchange=e=>{S.keepAwake=e.target.checked;saveSettings()};$('#sCache').onchange=e=>{S.cache=e.target.checked;saveSettings();updateEst()};$('#sAutoTitle').onchange=e=>{S.autoTitle=e.target.checked;saveSettings()};$('#sHelper').onchange=e=>{S.helperModel=e.target.value;saveSettings()};
+$('#sAutoCompact').onchange=e=>{S.autoCompact=e.target.checked;saveSettings()};$('#sPersona').onchange=e=>{S.persona=e.target.value;saveSettings();renderDials()};
+function renderDials(){const box=$('#dials');box.innerHTML=DIALS.filter(([k])=>!(k==='intensity'&&S.persona!=='kinfolk')).map(([k,name,desc])=>{const v=S.dials[k]??5;return `<div class="dial"><div class="dh"><b>${name}</b><span>${v}</span></div><input type="range" min="0" max="10" step="1" value="${v}" data-k="${k}"><small>${desc[v<=3?0:v<=7?1:2]}</small></div>`}).join('');
+  box.querySelectorAll('input').forEach(r=>r.oninput=()=>{const v=+r.value;S.dials[r.dataset.k]=v;const d=DIALS.find(x=>x[0]===r.dataset.k);r.parentElement.querySelector('.dh span').textContent=v;r.parentElement.querySelector('small').textContent=d[2][v<=3?0:v<=7?1:2];saveSettings()})}$('#sAutoLane').onchange=e=>{S.autoLane=e.target.value;saveSettings();if(S.autoLane==='off'){S.autoMode=false;setModel(S.model)}};$('#sKeepAwake').onchange=e=>{S.keepAwake=e.target.checked;saveSettings()};$('#sCache').onchange=e=>{S.cache=e.target.checked;saveSettings();updateEst()};$('#sAutoTitle').onchange=e=>{S.autoTitle=e.target.checked;saveSettings()};$('#sHelper').onchange=e=>{S.helperModel=e.target.value;saveSettings()};
 function ttsFields(){$('#devVoiceField').style.display=S.tts==='device'?'':'none';$('#ttsVoiceField').style.display=S.tts==='device'?'none':''}
 $('#sKey').oninput=e=>{S.apiKey=e.target.value.trim();saveSettings()};
 $('#sVault').oninput=e=>{S.vault=e.target.value.trim();saveSettings()};
