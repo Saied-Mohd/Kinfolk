@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#120E1A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Kinfolk</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23120E1A%27/%3E%3Cpath d=%27M17 12v40%27 stroke=%27%23FF3D8A%27 stroke-width=%279%27 stroke-linecap=%27round%27/%3E%3Cpath d=%27M45 14 24 32l21 18%27 stroke=%27%23FF3D8A%27 stroke-width=%279%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3Ccircle cx=%2750%27 cy=%2732%27 r=%275%27 fill=%27%233DE1FF%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+/* ---- themes ---- */
+:root,[data-theme=afterhours]{--bg:#120E1A;--surface:#1C1626;--raise:#281F36;--line:#3B2F50;--text:#F3EDFA;--muted:#A093B8;--accent:#FF3D8A;--accent-rgb:255,61,138;--accent-ink:#1A0A12;--second:#3DE1FF;--rose:#FF6B6B;--user:#2C2050;--mode:dark}
+[data-theme=bluehour]{--bg:#0E1524;--surface:#161F33;--raise:#1F2B45;--line:#2D3C5C;--text:#EAF0FF;--muted:#8FA0C4;--accent:#6EA8FF;--accent-rgb:110,168,255;--accent-ink:#0B1220;--second:#FFC46E;--rose:#FF7B7B;--user:#1E2E55;--mode:dark}
+[data-theme=velvet]{--bg:#170D12;--surface:#22151C;--raise:#301E28;--line:#47303B;--text:#F8EEF0;--muted:#B09AA2;--accent:#E0446A;--accent-rgb:224,68,106;--accent-ink:#1E0B10;--second:#F2C57C;--rose:#FF8080;--user:#3A1F2C;--mode:dark}
+[data-theme=acid]{--bg:#0F130F;--surface:#171D17;--raise:#212A21;--line:#334033;--text:#EEF5EA;--muted:#93A392;--accent:#C6FF4A;--accent-rgb:198,255,74;--accent-ink:#0F130F;--second:#FF7AD9;--rose:#FF6F6F;--user:#22301F;--mode:dark}
+[data-theme=daylight]{--bg:#FAF7F2;--surface:#FFFFFF;--raise:#F0EBE3;--line:#E1DACF;--text:#1E1A22;--muted:#6F687A;--accent:#E0457B;--accent-rgb:224,69,123;--accent-ink:#FFFFFF;--second:#1F8FA8;--rose:#C9414E;--user:#EEE6FF;--mode:light}
+[data-theme=fog]{--bg:#F1F4F8;--surface:#FFFFFF;--raise:#E5EAF2;--line:#D2D9E4;--text:#1B2230;--muted:#667287;--accent:#3B6EF2;--accent-rgb:59,110,242;--accent-ink:#FFFFFF;--second:#E08A2E;--rose:#C94848;--user:#E1E8FA;--mode:light}
+:root{--sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:16px/1.5 var(--sans);overscroll-behavior:none;transition:background .3s,color .3s}
+button,input,textarea,select{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--second)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+#app{height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:6px;padding:calc(var(--sat) + 8px) 10px 6px;flex:none}
+.icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--muted);flex:none}
+.icon:active{background:var(--raise)}
+.icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#modelBtn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;padding:4px 10px;border-radius:12px}
+#modelBtn:active{background:var(--raise)}
+#modelName{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#modelMeta{font-size:12px;color:var(--muted);font-family:var(--mono)}
+#ribbon{display:flex;justify-content:center;gap:18px;padding:3px 12px 6px;font:12px var(--mono);color:var(--muted);border-bottom:1px solid var(--line);flex:none}
+#ribbon b{color:var(--text);font-weight:500}
+#ribbon .bump{animation:bump .5s}
+@keyframes bump{30%{color:var(--accent);transform:scale(1.08)}}
+
+#chat{flex:1;overflow-y:auto;padding:16px 14px 8px}
+.msg{max-width:100%;margin:0 0 18px}
+.msg.user{display:flex;justify-content:flex-end}
+.msg.user .bubble{background:var(--user);border-radius:18px 18px 4px 18px;padding:10px 14px;max-width:88%;white-space:pre-wrap;word-wrap:break-word;transform-origin:right bottom}
+.msg.assistant .body{padding-left:12px;border-left:2px solid var(--accent);transform-origin:left top}
+.fresh .bubble,.fresh .body{animation:fxIn .35s ease-out both}
+.fx-pop{animation:fxPop .6s cubic-bezier(.2,1.4,.4,1) both!important}
+.fx-slam{animation:fxSlam .55s ease-out both!important}
+.fx-shake{animation:fxShake .7s both!important}
+.fx-glow{animation:fxGlow 2.4s ease-in-out 2!important;border-radius:14px}
+.fx-whisper{animation:fxWhisper 1.4s ease-out both!important;opacity:.85;font-size:.94em}
+@keyframes fxIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes fxPop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.07);opacity:1}100%{transform:scale(1)}}
+@keyframes fxSlam{0%{transform:scale(2.3);opacity:0}35%{transform:scale(1);opacity:1}50%{transform:translateY(5px)}65%{transform:translateY(-3px)}80%{transform:translateY(1px)}100%{transform:none}}
+@keyframes fxShake{0%,100%{transform:none}15%{transform:translateX(-7px) rotate(-1deg)}30%{transform:translateX(7px) rotate(1deg)}45%{transform:translateX(-6px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+@keyframes fxGlow{0%,100%{box-shadow:0 0 0 rgba(var(--accent-rgb),0)}50%{box-shadow:0 0 30px 4px rgba(var(--accent-rgb),.55)}}
+@keyframes fxWhisper{from{opacity:0;filter:blur(5px);letter-spacing:.06em}to{opacity:.85;filter:none;letter-spacing:0}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+
+.body p{margin:0 0 .8em}.body p:last-child{margin-bottom:0}
+.body h1,.body h2,.body h3{margin:1em 0 .4em;line-height:1.25}.body h1{font-size:1.35em}.body h2{font-size:1.2em}.body h3{font-size:1.05em}
+.body ul,.body ol{padding-left:1.3em;margin:.3em 0 .8em}
+.body pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;font:13px/1.45 var(--mono);position:relative;margin:.6em 0}
+.body code{font-family:var(--mono);font-size:.9em;background:var(--surface);padding:.1em .35em;border-radius:5px}
+.body pre code{background:none;padding:0;font-size:inherit}
+.body table{border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
+.body td,.body th{border:1px solid var(--line);padding:5px 9px;text-align:left}
+.body blockquote{margin:.6em 0;padding-left:12px;border-left:2px solid var(--line);color:var(--muted)}
+.body img{max-width:100%;border-radius:10px}
+.codebar{display:flex;justify-content:flex-end;gap:6px;margin-bottom:-6px;position:relative;z-index:1}
+.codebar button{font-size:12px;color:var(--muted);padding:2px 8px;border-radius:6px;background:var(--raise)}
+.think-live{max-height:30vh;overflow-y:auto;font:12px/1.5 var(--mono);color:var(--muted);white-space:pre-wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 10px;position:relative;background:var(--surface)}
+.think-live.exp{max-height:none}
+.think-live .tl{position:sticky;top:0;font-family:var(--sans);font-size:12px;color:var(--accent);background:var(--surface);padding-bottom:4px;display:flex;justify-content:space-between}
+.thinking{font-size:13px;color:var(--muted);margin:0 0 8px}
+.thinking summary{cursor:pointer;list-style:none;display:inline-block;padding:3px 10px;border-radius:8px;background:var(--surface)}
+.thinking pre{white-space:pre-wrap;font:12px/1.5 var(--mono);color:var(--muted);background:none;border:0;padding:8px 0 0;max-height:60vh;overflow:auto}
+.actions{display:flex;gap:2px;margin-top:8px;padding-left:12px;flex-wrap:wrap;align-items:center}
+.actions button{font-size:12px;color:var(--muted);padding:5px 8px;border-radius:8px}
+.actions button:active{background:var(--raise)}
+.actions .cost{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.filecard{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:.6em 0}
+.filecard .fi{width:38px;height:38px;border-radius:9px;background:var(--raise);display:grid;place-items:center;font:600 11px var(--mono);color:var(--accent);flex:none;text-transform:uppercase}
+.filecard .fn{flex:1;min-width:0}.filecard .fn b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.filecard .fn span{font-size:12px;color:var(--muted)}
+.filecard button{background:var(--accent);color:var(--accent-ink);font-weight:500;font-size:13px;padding:7px 12px;border-radius:9px}
+.filecard button.sec{background:var(--raise);color:var(--text)}
+.memcard{background:var(--surface);border:1px dashed var(--accent);border-radius:12px;padding:9px 12px;margin:.6em 0;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.memcard .ops{flex:1;min-width:0;color:var(--muted)}
+.memcard b{color:var(--text);font-weight:500}
+.memcard button{color:var(--accent);font-weight:500;font-size:13px;padding:4px 8px;border-radius:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:6px}
+.chip{font-size:12px;background:var(--raise);border-radius:8px;padding:4px 8px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.chip button{color:var(--muted);font-size:14px;line-height:1}
+.fxtag{font-size:11px;color:var(--accent);font-family:var(--mono);margin-bottom:3px;text-align:right}
+.msg.assistant .fxtag{text-align:left;padding-left:12px}
+.empty{height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;color:var(--muted);padding:0 12px 60px}
+.empty h1{font-size:28px;font-weight:500;line-height:1.15;color:var(--text);margin:0}
+.empty p{margin:0}
+.err{color:var(--rose);font-size:14px;padding:10px 12px;background:rgba(224,120,120,.1);border-radius:10px;white-space:pre-wrap;word-break:break-word}
+
+#composer{flex:none;padding:8px 10px calc(var(--sab) + 8px);border-top:1px solid var(--line);background:var(--bg)}
+#attach{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+#attach:empty{display:none}
+.row{display:flex;align-items:flex-end;gap:4px}
+#input{flex:1;min-height:44px;max-height:180px;resize:none;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 14px;line-height:1.35}
+#input::placeholder{color:var(--muted)}
+#send{width:44px;height:44px;border-radius:13px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none;position:relative}
+#send svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#send.stop{background:var(--rose)}
+#send .fxdot{position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:var(--second);display:none}
+#send.hasfx .fxdot{display:block}
+.rec{background:var(--rose)!important;color:#fff!important}
+.listening{color:var(--accent)!important}
+#fxMenu{position:fixed;right:10px;bottom:calc(var(--sab) + 70px);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px;display:none;flex-direction:column;gap:2px;z-index:30;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#fxMenu.open{display:flex}
+#fxMenu button{text-align:left;padding:9px 14px;border-radius:9px;font-size:15px}
+#fxMenu button:active{background:var(--raise)}
+#fxMenu button.on{color:var(--accent);font-weight:500}
+
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20}
+.sheet.open{display:block}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:92%;background:var(--surface);border-radius:20px 20px 0 0;display:flex;flex-direction:column;padding-bottom:var(--sab);overflow:hidden}
+.panel .grab{width:36px;height:4px;border-radius:2px;background:var(--line);margin:10px auto 6px}
+.panel h2{font-size:17px;font-weight:500;margin:6px 16px 10px;display:flex;justify-content:space-between;align-items:center}
+.panel .scroll{flex:1;min-height:0;overflow-y:auto;padding:0 16px 24px;-webkit-overflow-scrolling:touch}
+.drawer{position:absolute;top:0;bottom:0;left:0;width:min(320px,85%);background:var(--surface);display:flex;flex-direction:column;padding-top:calc(var(--sat) + 10px)}
+.drawer h2{font-size:17px;font-weight:500;margin:6px 16px 10px}
+.drawer .scroll{flex:1;min-height:0;overflow-y:auto;padding:0 8px}
+.conv{display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:10px}
+.conv.active{background:var(--raise)}
+.conv .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv .m{font-size:11px;color:var(--muted);font-family:var(--mono);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv .x{color:var(--muted);padding:6px}
+.drawer .foot{padding:10px 16px calc(var(--sab) + 10px);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.btn{display:block;width:100%;text-align:left;padding:11px 14px;border-radius:12px;background:var(--raise);font-weight:500}
+.btn.primary{background:var(--accent);color:var(--accent-ink);text-align:center}
+.btn.ghost{background:none;color:var(--muted);font-weight:400}
+.btn.danger{color:var(--rose)}
+.btn.sm{display:inline-block;width:auto;padding:7px 12px;font-size:13px}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 8px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:5px 11px;border-radius:999px;background:var(--raise);color:var(--muted);font-size:13px}
+.tab.on{background:var(--accent);color:var(--accent-ink)}
+.search{margin:0 16px 10px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 14px;width:calc(100% - 32px)}
+.mrow{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.mrow .info{flex:1;min-width:0}
+.mrow .n{font-weight:500;line-height:1.3;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.mrow .d{font-size:12px;color:var(--muted);font-family:var(--mono);display:flex;gap:10px;flex-wrap:wrap}
+.mrow .prov{font-size:12px;color:var(--second)}
+.mrow .star{color:var(--muted);font-size:20px;padding:4px 6px}
+.mrow .star.on{color:var(--accent)}
+.mrow.sel .n{color:var(--accent)}
+.mod{font-size:11px;padding:1px 5px;border-radius:4px;background:var(--raise)}
+.hint{font-size:13px;color:var(--muted);margin:0 16px 10px}
+.toolbar{display:flex;gap:6px;align-items:center;padding:0 16px 8px;flex-wrap:wrap}
+.toolbar select{background:var(--raise);border:0;border-radius:999px;padding:5px 10px;font-size:13px;color:var(--text)}
+.toolbar .tab.on{background:var(--second);color:var(--accent-ink)}
+.tier{font:500 10px var(--mono);padding:2px 6px;border-radius:5px;letter-spacing:.03em;text-transform:uppercase}
+.tier.light{background:rgba(126,195,183,.18);color:var(--second)}.tier.everyday{background:rgba(var(--accent-rgb),.16);color:var(--accent)}.tier.deep{background:rgba(255,196,110,.18);color:#FFC46E}.tier.free{background:var(--raise);color:var(--muted)}
+[data-theme=daylight] .tier.deep,[data-theme=fog] .tier.deep{color:#9A5B00}
+.ratio{font:11px var(--mono);color:var(--muted)}
+.mrow input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.cmpbar{display:flex;gap:8px;align-items:center;padding:10px 16px;border-top:1px solid var(--line);background:var(--surface)}
+.cmpbar .btn{margin:0}
+.cmp{width:100%;border-collapse:collapse;font-size:13px}
+.cmp th,.cmp td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.cmp th{color:var(--muted);font-weight:500;font-size:12px;position:sticky;top:0;background:var(--surface)}
+.cmp td:first-child{color:var(--muted);font-size:12px;white-space:nowrap}
+.cmp .best{color:var(--second);font-weight:500}
+.cmp button{color:var(--accent);font-weight:500}
+.brand{display:flex;align-items:center;gap:10px;padding:0 16px 12px}
+.brand .word{font-weight:600;font-size:20px;letter-spacing:.02em;flex:1}
+.logo{width:34px;height:34px;display:inline-block;flex:none}
+.logo svg{width:100%;height:100%}
+.empty .logo{width:56px;height:56px}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.quick button{font-size:13px;padding:7px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--text)}
+.msg.user .actions{justify-content:flex-end;padding:0;margin-top:4px}
+.step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.step .n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.step b{display:block;font-weight:500;margin-bottom:2px}
+.step p{margin:0;color:var(--muted);font-size:14px}
+#ribbon{gap:12px;flex-wrap:wrap}
+.bud{--p:0%;background:linear-gradient(90deg,rgba(var(--accent-rgb),.22) var(--p),transparent var(--p));border-radius:6px;padding:1px 7px}
+.bud.warn{background:linear-gradient(90deg,rgba(255,196,110,.35) var(--p),transparent var(--p))}.bud.warn b{color:#FFC46E}
+.bud.over{background:rgba(224,120,120,.25)}.bud.over b{color:var(--rose)}
+[data-theme=daylight] .bud.warn b,[data-theme=fog] .bud.warn b{color:#9A5B00}
+#est{display:flex;justify-content:space-between;align-items:center;font:12px var(--mono);color:var(--muted);padding:0 4px 6px;min-height:18px}
+#est.warn{color:#FFC46E}#est.over{color:var(--rose)}
+#est button{font:500 12px var(--sans);color:var(--accent);padding:3px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.msg.compact{display:block}
+.msg.compact .cc{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:8px 12px;font-size:13px;color:var(--muted);cursor:pointer}
+.msg.compact .cc b{color:var(--text);font-weight:500}
+.msg.compact .cc pre{display:none;white-space:pre-wrap;font:12px/1.5 var(--sans);color:var(--text);margin:8px 0 0}
+.msg.compact .cc.open pre{display:block}
+.seg{display:flex;gap:5px;flex-wrap:wrap;padding:0 16px 8px}
+.filtsum{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 16px 8px;padding:8px 12px;border-radius:12px;background:var(--raise);font-size:13px;text-align:left;width:calc(100% - 32px)}
+.filtsum span:first-child{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filtsum .chev{color:var(--muted);transition:transform .2s}
+.filtsum.open .chev{transform:rotate(180deg)}
+#filters{display:none}#filters.open{display:block}
+.seg{display:flex;gap:5px;flex-wrap:wrap;padding:0 16px 8px}
+.seg .lbl{font:500 11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;width:100%;margin:2px 0 -2px}
+.mrow .d2{font-size:12px;color:var(--muted);font-family:var(--mono);display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+.mrow .d2 .turns{color:var(--text)}
+.tier.money{background:rgba(224,120,120,.18);color:var(--rose)}
+
+.field{display:block;margin-bottom:16px}
+.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input,.field textarea,.field select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.field textarea{min-height:110px;font-family:var(--mono);font-size:13px;line-height:1.45}
+.field .desc{font-size:12px;color:var(--muted);margin-top:5px;display:block;font-style:normal}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+.sec-h{font-size:12px;color:var(--accent);font-weight:500;margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+.sec-h:first-child{border:0;padding-top:0;margin-top:4px}
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.theme{border-radius:12px;padding:8px;background:var(--raise);text-align:left;border:2px solid transparent}
+.theme.on{border-color:var(--accent)}
+.theme .sw{height:34px;border-radius:8px;display:flex;overflow:hidden;margin-bottom:6px}
+.theme .sw i{flex:1}
+.theme small{font-size:12px}
+.krow{display:flex;gap:6px;margin-bottom:8px}
+.krow input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
+.krow input.k{flex:0 0 34%}
+.krow button{color:var(--muted);padding:0 6px}
+.stat{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.stat b{font-family:var(--mono);font-weight:500}
+.mem{display:flex;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:flex-start}
+.mem .k{font:12px var(--mono);color:var(--second);flex:0 0 32%;word-break:break-word;padding-top:2px}
+.mem .c{flex:1;min-width:0}
+.mem .c small{display:block;color:var(--muted);font:11px var(--mono);margin-top:3px}
+.mem .c.stale small{color:var(--rose)}
+.mem button{color:var(--muted);padding:2px 6px;font-size:15px}
+#toast{position:fixed;left:50%;bottom:calc(var(--sab) + 90px);transform:translateX(-50%);background:var(--raise);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:90%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#toast.show{opacity:1;pointer-events:auto}
+#toast button{color:var(--accent);font-weight:500;margin-left:10px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="icon" id="menuBtn" aria-label="Chats"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <button id="modelBtn" aria-label="Choose model"><span id="modelName">Choose a model</span><span id="modelMeta"></span></button>
+    <button class="icon" id="helpBtn" aria-label="Help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.5a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2 1-1.2 1.9M12 17.2v.1"/></svg></button>
+    <button class="icon" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+  <div id="ribbon"><span class="bud" id="rDay">today <b></b></span><span class="bud" id="rMonth">month <b></b></span><span>chat <b id="rChat">$0</b></span><span id="rLastWrap">last <b id="rLast">—</b></span></div>
+
+  <main id="chat"></main>
+
+  <div id="composer">
+    <div id="est"><span id="estTxt"></span><button id="compactBtn" style="display:none">Compact</button></div>
+    <div id="attach"></div>
+    <div class="row">
+      <button class="icon" id="fileBtn" aria-label="Attach file"><svg viewBox="0 0 24 24"><path d="M21.4 11.05l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+      <input type="file" id="fileInput" multiple hidden>
+      <textarea id="input" rows="1" placeholder="Message"></textarea>
+      <button class="icon" id="dictateBtn" aria-label="Dictate"><svg viewBox="0 0 24 24"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4zM19 11a7 7 0 0 1-14 0M12 18v3"/></svg></button>
+      <button class="icon" id="recBtn" aria-label="Hold to record a voice note"><svg viewBox="0 0 24 24"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg></button>
+      <button id="send" aria-label="Send (hold for effects)"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span class="fxdot"></span></button>
+    </div>
+  </div>
+</div>
+<div id="fxMenu"></div>
+<canvas id="confetti"></canvas>
+
+<div class="sheet" id="drawerSheet"><div class="drawer">
+  <div class="brand"><span class="logo"></span><span class="word">Kinfolk</span><button class="icon" id="modeBtn" aria-label="Day / night"></button></div>
+  <div style="padding:0 16px 8px"><button class="btn primary" id="newChat">New chat</button></div>
+  <input class="search" id="convSearch" placeholder="Search chats" style="margin:0 16px 6px;width:calc(100% - 32px)">
+  <div class="scroll" id="convList"></div>
+  <div class="foot" id="drawerFoot">
+    <button class="btn ghost" id="exportAll">Export all chats (JSON)</button>
+    <button class="btn ghost" id="importAll">Import chats (JSON)</button>
+    <input type="file" id="importInput" accept=".json" hidden>
+  </div>
+</div></div>
+
+<div class="sheet" id="modelSheet"><div class="panel">
+  <div class="grab"></div>
+  <h2 id="modelTitle">Models</h2>
+  <input class="search" id="modelSearch" placeholder="Search every model on OpenRouter" autocomplete="off">
+  <button class="filtsum" id="filtSum"><span id="filtTxt"></span><span class="chev">▾</span></button>
+  <div id="filters">
+  <div class="seg" id="segTier"></div>
+  <div class="seg" id="segUse"></div>
+  <div class="toolbar"><select id="sortSel"><option value="rec">Recommended</option><option value="cheap">Cheapest</option><option value="newest">Newest</option><option value="ctx">Biggest context</option><option value="pricey">Priciest</option></select><button class="tab" data-f="thinks">Thinks</button><button class="tab" data-f="favs">★</button><button class="tab" data-f="cmp">Compare</button></div>
+  <p class="hint" id="modelHint"></p>
+  </div>
+  <div class="scroll" id="modelList"></div>
+  <div class="cmpbar" id="cmpBar" style="display:none"><span style="flex:1;font-size:13px;color:var(--muted)" id="cmpCount"></span><button class="btn sm ghost" id="cmpClear">Clear</button><button class="btn sm primary" id="cmpGo">Compare</button></div>
+</div></div>
+
+<div class="sheet" id="settingsSheet"><div class="panel">
+  <div class="grab"></div>
+  <h2>Settings</h2>
+  <div class="scroll">
+    <div class="sec-h">Budget</div>
+    <div style="display:flex;gap:8px"><label class="field" style="flex:1"><span>Monthly ($)</span><input id="sBudgetMonth" type="number" step="1" min="0"></label><label class="field" style="flex:1"><span>Daily ($)</span><input id="sBudgetDay" type="number" step="0.1" min="0"></label></div>
+    <label class="field"><span>Ask before any send estimated over ($)</span><input id="sConfirm" type="number" step="0.05" min="0"><em class="desc">Deep-tier models always ask once per chat regardless.</em></label>
+    <div style="display:flex;gap:8px"><label class="field" style="flex:1"><span>Suggest compacting at (% context)</span><input id="sCompactAt" type="number" step="5" min="10" max="95"></label><label class="field" style="flex:1"><span>Re-send attachments for (turns)</span><input id="sAttachAge" type="number" step="1" min="0" max="20"></label></div>
+    <div class="toggle"><span>Auto-compact when the threshold is hit</span><input type="checkbox" id="sAutoCompact"></div>
+    <div class="toggle"><span>Cache the system prompt (Anthropic models)</span><input type="checkbox" id="sCache"></div>
+    <div class="toggle"><span>Auto-title chats with the helper model</span><input type="checkbox" id="sAutoTitle"></div>
+    <label class="field" style="margin-top:14px"><span>Helper model (titles, compaction)</span><select id="sHelper"></select><em class="desc">Always a light-tier model, whatever you're chatting with.</em></label>
+
+    <div class="sec-h">Spend</div>
+    <div class="stat"><span>Projected this month</span><b id="stProj"></b></div>
+    <div class="stat"><span>This chat</span><b id="stChat"></b></div>
+    <div class="stat"><span>Today</span><b id="stToday"></b></div>
+    <div class="stat"><span>All time</span><b id="stAll"></b></div>
+    <button class="btn ghost sm" id="resetSpend" style="margin-top:6px">Reset all-time counter</button>
+
+    <div class="sec-h">Look</div>
+    <div class="themes" id="themes"></div>
+    <div class="toggle"><span>Message animations</span><input type="checkbox" id="sAnim"></div>
+
+    <div class="sec-h">Memory <span style="color:var(--muted);font-weight:400" id="memCount"></span></div>
+    <p class="hint" style="margin:0 0 10px">The model sees every entry with its last-updated date and can add, update or delete on its own. Import JSON or Markdown from other tools (Claude Code memory files are Markdown).</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn sm" id="memImport">Import</button><input type="file" id="memInput" accept=".json,.md,.txt,.jsonl" multiple hidden>
+      <button class="btn sm" id="memExport">Export JSON</button>
+      <button class="btn sm" id="memObs">To Obsidian</button>
+      <button class="btn sm" id="memAdd">Add</button>
+    </div>
+    <input class="search" id="memSearch" placeholder="Filter memory" style="margin:0 0 6px;width:100%">
+    <div id="memList"></div>
+    <details style="margin-top:10px"><summary class="hint" style="margin:0;cursor:pointer">Change log</summary><div id="memLog" style="font:12px var(--mono);color:var(--muted);white-space:pre-wrap;margin-top:6px"></div></details>
+
+    <div class="sec-h">Keys</div>
+    <label class="field"><span>OpenRouter API key</span><input id="sKey" type="password" placeholder="sk-or-v1-…" autocomplete="off"><em class="desc">Required. Stored only on this device.</em></label>
+    <label class="field"><span>Obsidian vault name</span><input id="sVault" placeholder="e.g. Second Brain"><em class="desc">Obsidian has no API key — it's a local app. "Save to Obsidian" opens it via its <code>obsidian://</code> link and creates the note in <code>AI Chats/</code>. Blank = default vault.</em></label>
+    <div class="field"><span>Other keys</span><div id="keyList"></div><button class="btn ghost sm" id="keyAdd">Add key</button><em class="desc">Name a key <code>elevenlabs</code> or <code>openai</code> and it becomes available for voice playback below. Anything else is stored for future integrations.</em></div>
+
+    <div class="sec-h">Voice</div>
+    <label class="field"><span>Playback voice</span><select id="sTts"><option value="device">Device voice (free)</option><option value="elevenlabs">ElevenLabs</option><option value="openai">OpenAI</option></select></label>
+    <label class="field" id="devVoiceField"><span>Device voice</span><select id="sVoice"></select></label>
+    <label class="field" id="ttsVoiceField" style="display:none"><span>Voice ID / name</span><input id="sTtsVoice" placeholder="ElevenLabs voice ID, or OpenAI: alloy, nova, onyx…"></label>
+    <div class="toggle"><span>Read replies aloud automatically</span><input type="checkbox" id="sAutoRead"></div>
+
+    <div class="sec-h">Model behavior</div>
+    <label class="field"><span>Reference model for comparisons</span><select id="sRef"></select><em class="desc">Every model shows its blended cost as a multiple of this one. Defaults to the newest Claude Opus.</em></label>
+    <label class="field"><span>Temperature <b id="tempVal"></b></span><input type="range" id="sTemp" min="0" max="1.5" step="0.1"></label>
+    <label class="field"><span>System prompt</span><textarea id="sSystem"></textarea><button class="btn ghost sm" id="resetSystem" type="button">Reset to default</button></label>
+    <button class="btn ghost" id="refreshModels">Refresh model list</button>
+    <button class="btn ghost danger" id="wipe">Delete everything on this device</button>
+    <p class="hint" style="margin:14px 0 0;font-size:12px">Everything runs in this page. Requests go directly to the providers; nothing else sees your keys or chats.</p>
+  </div>
+</div></div>
+
+<div class="sheet" id="helpSheet"><div class="panel">
+  <div class="grab"></div>
+  <h2><span style="display:flex;align-items:center;gap:10px"><span class="logo"></span>Kinfolk</span><button class="btn sm ghost" id="helpTour">Tour</button></h2>
+  <div class="scroll" id="helpBody"></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+let toastT;function toast(m,action,fn){const t=$('#toast');t.innerHTML=esc(m)+(action?`<button>${esc(action)}</button>`:'');if(action)t.querySelector('button').onclick=()=>{fn();t.classList.remove('show')};t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),action?6000:2600)}
+const libs={};function loadScript(url,global){if(window[global])return Promise.resolve(window[global]);if(libs[url])return libs[url];libs[url]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=url;s.onload=()=>res(window[global]);s.onerror=()=>rej(new Error('Could not load '+url));document.head.appendChild(s)});return libs[url]}
+const LIB={xlsx:['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js','XLSX'],docx:['https://unpkg.com/docx@8.5.0/build/index.umd.js','docx'],jspdf:['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','jspdf'],pdfjs:['https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js','pdfjsLib'],mammoth:['https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js','mammoth']};
+const lib=k=>loadScript(...LIB[k]);
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}
+const fmtSize=n=>n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB';
+const fmtCtx=n=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':Math.round(n/1000)+'K';
+const fmtPrice=p=>{const n=parseFloat(p)*1e6;if(!n)return 'free';return '$'+(n<0.1?n.toFixed(3):n<1?n.toFixed(2):n.toFixed(2).replace(/\.00$/,''))};
+const fmtUsd=n=>n==null?'—':n===0?'$0':n<0.001?'<$0.001':n<1?'$'+n.toFixed(3):'$'+n.toFixed(2);
+const ago=ts=>{const d=(Date.now()-ts)/864e5;return d<1?'today':d<2?'yesterday':d<30?Math.floor(d)+'d ago':d<365?Math.floor(d/30)+'mo ago':Math.floor(d/365)+'y ago'};
+const today=()=>new Date().toISOString().slice(0,10);
+
+/* ---------- storage ---------- */
+const DB=(()=>{let d;const open=()=>d?Promise.resolve(d):new Promise((res,rej)=>{const r=indexedDB.open('orchat',1);r.onupgradeneeded=e=>{const db=e.target.result;db.createObjectStore('convs',{keyPath:'id'});db.createObjectStore('kv',{keyPath:'k'})};r.onsuccess=e=>{d=e.target.result;res(d)};r.onerror=()=>rej(r.error)});
+const tx=async(s,m,f)=>{const db=await open();return new Promise((res,rej)=>{const t=db.transaction(s,m);const q=f(t.objectStore(s));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)})};
+return{get:(s,k)=>tx(s,'readonly',st=>st.get(k)),all:s=>tx(s,'readonly',st=>st.getAll()),put:(s,v)=>tx(s,'readwrite',st=>st.put(v)),del:(s,k)=>tx(s,'readwrite',st=>st.delete(k)),clear:s=>tx(s,'readwrite',st=>st.clear())}})();
+const kvGet=async k=>(await DB.get('kv',k))?.v;const kvSet=(k,v)=>DB.put('kv',{k,v});
+
+/* ---------- settings ---------- */
+const DEFAULT_SYSTEM=`You're the user's sharp, funny, no-BS friend who also happens to be brilliant at whatever they throw at you. Read the room and match their energy: chill and vibey when they're just talking, precise and quiet when they're working. Sarcasm is welcome when it lands; encouragement when it's needed. Never corporate, never gushing, never padded. Emojis and playful formatting are fine when you're just talking. Anything meant to be copied, pasted, shipped or downloaded (code, docs, files, emails, lists they'll paste somewhere) stays clean: no emojis, no banter inside it.
+
+Now: {{now}} (user's local time). Use this to judge what's recent, what's stale, and what "today" means.
+
+# Memory
+You run the user's long-term memory. Every entry below carries the date it was last updated. Treat older entries as possibly stale: check before relying on them, update or delete what's wrong, and add what's durable and would matter in a future conversation. Don't store trivia, one-off task state, or things already there.
+{{memory}}
+
+To change memory, output a fenced code block with the info string memory-ops containing a JSON array of operations:
+[{"op":"add","key":"short-topic-key","content":"the fact"},{"op":"update","key":"existing-key","content":"replacement text"},{"op":"delete","key":"existing-key"}]
+Keys are lowercase-with-dashes topics (e.g. "vasma-pricing", "wife-name"). Ops apply automatically; the user can undo. Mention what you changed in one short line outside the block.
+
+# Effects
+You may open a message with [[fx:NAME]] on its own first line to animate it: pop (good news), slam (urgent or important), shake (warning, big mistake), glow (worth savoring), whisper (quiet aside), confetti (celebration). Use them rarely so they keep meaning. The user may prefix their own messages the same way — take the hint.
+
+# Files
+When the user wants a downloadable file, put the entire file in ONE fenced code block whose info string is: <type> file=<filename.ext>
+- xlsx file=name.xlsx → JSON object mapping sheet names to arrays of rows, e.g. {"Sheet1":[["Name","Qty"],["Bolt",12]]}. Numbers as numbers.
+- docx file=name.docx → the document as Markdown (headings, paragraphs, bullets, bold).
+- pdf file=name.pdf → the document as Markdown.
+- html file=name.html → a complete self-contained HTML page (inline CSS/JS). For slide decks, a full-screen deck with keyboard and tap navigation.
+- json, csv, md, txt, svg, or any code language (py, js, ts, sql, sh…) → raw file contents.
+One file per block; no commentary inside it. If the user only wants to see code, use a normal code block without file=. Never claim a file was created by other means.
+
+# Voice
+If the user's message is an audio note, respond to its content directly; don't describe that it was audio.`;
+const S={apiKey:'',model:'',vault:'',system:DEFAULT_SYSTEM,autoRead:false,voice:'',temp:0.7,favs:[],tab:'top',theme:'afterhours',lastDark:'afterhours',lastLight:'daylight',anim:true,keys:[],tts:'device',ttsVoice:'',spendAll:0,spendDay:{},sort:'rec',refModel:'',sawHelp:false,budgetMonth:100,budgetDay:3.3,confirmAbove:0.5,compactAt:60,autoCompact:false,attachAge:2,helperModel:'',cache:true,autoTitle:true,pick:{tier:'any',use:'any'}};
+async function loadSettings(){const s=await kvGet('settings')||{};Object.assign(S,s);if(!S.pick||!S.pick.tier)S.pick={tier:'any',use:'any'};if(!['rec','cheap','newest','ctx','pricey'].includes(S.sort))S.sort='rec';if(typeof s.memory==='string'&&s.memory.trim()&&!(await kvGet('memory'))){MEM.entries=[{id:uid(),key:'imported-notes',content:s.memory.trim(),updated:Date.now(),source:'v1'}];await saveMem()}}
+const saveSettings=()=>kvSet('settings',S);
+
+/* ---------- memory ---------- */
+const MEM={entries:[],log:[]};
+async function loadMem(){const m=await kvGet('memory');if(m)Object.assign(MEM,m)}
+const saveMem=()=>kvSet('memory',MEM);
+function logMem(s){MEM.log.unshift(new Date().toISOString().slice(0,16).replace('T',' ')+'  '+s);MEM.log=MEM.log.slice(0,200)}
+function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,48)||'note'}
+function applyOps(ops,source){const before=JSON.stringify(MEM.entries);let a=0,u=0,d=0;for(const op of ops){if(!op||!op.op)continue;const key=slug(op.key||op.content?.slice(0,30)||'note');const ex=MEM.entries.find(e=>e.key===key);
+  if(op.op==='delete'){if(ex){MEM.entries=MEM.entries.filter(e=>e!==ex);d++}}
+  else if(op.op==='update'||(op.op==='add'&&ex)){if(ex){ex.content=String(op.content||'').trim();ex.updated=Date.now();ex.source=source;u++}else{MEM.entries.push({id:uid(),key,content:String(op.content||'').trim(),updated:Date.now(),source});a++}}
+  else if(op.op==='add'){MEM.entries.push({id:uid(),key,content:String(op.content||'').trim(),updated:Date.now(),source});a++}}
+  if(a+u+d){logMem(`${source}: +${a} ~${u} -${d}`);saveMem()}return{a,u,d,before}}
+function memBlock(){if(!MEM.entries.length)return '(empty — nothing stored yet)';return [...MEM.entries].sort((x,y)=>x.key.localeCompare(y.key)).map(e=>`- ${e.key} (updated ${new Date(e.updated).toISOString().slice(0,10)}, ${ago(e.updated)}): ${e.content}`).join('\n')}
+function parseImport(name,text){const out=[];const src=name.replace(/\.[^.]+$/,'');const push=(key,content,updated)=>{content=String(content??'').trim();if(!content)return;out.push({op:'add',key:slug(key||content.slice(0,40)),content,updated})};
+  const walk=(v,key)=>{if(v==null)return;if(typeof v==='string'){push(key,v)}else if(Array.isArray(v)){v.forEach((x,i)=>walk(x,key?key+'-'+(i+1):''))}else if(typeof v==='object'){const c=v.content??v.text??v.fact??v.value??v.memory??v.note;const k=v.key??v.topic??v.title??v.name??key;const list=v.entries??v.memories??v.facts??v.items??v.notes;if(list)walk(list,k);else if(typeof c==='string')push(k,c,v.updated??v.date??v.timestamp);else Object.entries(v).forEach(([kk,vv])=>typeof vv==='object'?walk(vv,kk):push(kk,vv))}};
+  if(/\.jsonl$/i.test(name)){text.split('\n').filter(Boolean).forEach(l=>{try{walk(JSON.parse(l))}catch{}});return out}
+  try{walk(JSON.parse(text));return out}catch{}
+  let head='';const buf=[];const flush=()=>{if(buf.length){push(head||src,buf.join(' '));buf.length=0}};
+  text.split('\n').forEach(l=>{const h=l.match(/^#{1,6}\s+(.*)/);if(h){flush();head=h[1].trim();return}const b=l.match(/^\s*[-*]\s+(.*)/);if(b){flush();push(head||src,b[1]);return}if(!l.trim()){flush();return}buf.push(l.trim())});flush();return out}
+function renderMem(){const q=$('#memSearch').value.trim().toLowerCase();const list=[...MEM.entries].sort((a,b)=>b.updated-a.updated).filter(e=>!q||(e.key+' '+e.content).toLowerCase().includes(q));
+  $('#memCount').textContent=MEM.entries.length?`· ${MEM.entries.length} entries`:'';
+  $('#memList').innerHTML=list.map(e=>`<div class="mem" data-id="${e.id}"><div class="k">${esc(e.key)}</div><div class="c ${Date.now()-e.updated>60*864e5?'stale':''}">${esc(e.content)}<small>${ago(e.updated)} · ${esc(e.source||'')}</small></div><button data-a="e" aria-label="Edit">✎</button><button data-a="x" aria-label="Delete">✕</button></div>`).join('')||'<p class="hint" style="margin:10px 0">Nothing stored yet. Tell the model to remember something, or import a file.</p>';
+  $('#memList').querySelectorAll('.mem').forEach(row=>{const e=MEM.entries.find(x=>x.id===row.dataset.id);row.querySelector('[data-a=x]').onclick=()=>{MEM.entries=MEM.entries.filter(x=>x!==e);logMem('you: -1 '+e.key);saveMem();renderMem()};row.querySelector('[data-a=e]').onclick=()=>{const v=prompt('Edit "'+e.key+'"',e.content);if(v!=null&&v.trim()){e.content=v.trim();e.updated=Date.now();e.source='you';logMem('you: ~1 '+e.key);saveMem();renderMem()}}});
+  $('#memLog').textContent=MEM.log.join('\n')||'—'}
+$('#memSearch').oninput=renderMem;
+$('#memImport').onclick=()=>$('#memInput').click();
+$('#memInput').onchange=async e=>{let n=0;for(const f of e.target.files){try{const ops=parseImport(f.name,await readAs(f,'readAsText'));const r=applyOps(ops,'import:'+f.name);ops.forEach(o=>{if(o.updated){const en=MEM.entries.find(x=>x.key===o.key);const t=Date.parse(o.updated);if(en&&t)en.updated=t}});n+=r.a+r.u}catch(err){toast('Could not import '+f.name+': '+err.message)}}saveMem();renderMem();toast(`Imported ${n} memory entries`);e.target.value=''};
+$('#memExport').onclick=()=>download('memory-'+today()+'.json',new Blob([JSON.stringify({exported:new Date().toISOString(),entries:MEM.entries},null,2)],{type:'application/json'}));
+$('#memAdd').onclick=()=>{const k=prompt('Topic key (e.g. wife-name)');if(!k)return;const c=prompt('What to remember');if(!c)return;applyOps([{op:'add',key:k,content:c}],'you');renderMem()};
+$('#memObs').onclick=()=>memoryToObsidian();
+
+/* ---------- spend, budget, estimate ---------- */
+function addSpend(c){if(!c)return;S.spendAll+=c;const d=today();S.spendDay[d]=(S.spendDay[d]||0)+c;Object.keys(S.spendDay).forEach(k=>{if(Date.now()-Date.parse(k)>120*864e5)delete S.spendDay[k]});saveSettings()}
+const convCost=c=>(c?.messages||[]).reduce((s,m)=>s+(m.cost||0),0)+(c?.extraCost||0);
+const monthSpend=()=>{const p=today().slice(0,7);return Object.entries(S.spendDay).filter(([k])=>k.startsWith(p)).reduce((s,[,v])=>s+v,0)};
+const monthProj=()=>{const d=new Date(),day=d.getDate(),days=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return monthSpend()/day*days};
+function budClass(el,used,cap){const pct=cap?Math.min(100,used/cap*100):0;el.style.setProperty('--p',pct+'%');el.classList.toggle('warn',pct>=80&&pct<100);el.classList.toggle('over',pct>=100)}
+function renderRibbon(last){const day=S.spendDay[today()]||0,mon=monthSpend();$('#rDay').innerHTML=`today <b>${fmtUsd(day)}</b>/${fmtUsd(S.budgetDay)}`;$('#rMonth').innerHTML=`month <b>${fmtUsd(mon)}</b>/${fmtUsd(S.budgetMonth)}`;budClass($('#rDay'),day,S.budgetDay);budClass($('#rMonth'),mon,S.budgetMonth);$('#rChat').textContent=fmtUsd(convCost(CUR));
+  if(last!==undefined){$('#rLast').textContent=fmtUsd(last);['#rChat','#rLastWrap'].forEach(s=>{const el=$(s);el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')})}}
+$('#resetSpend').onclick=()=>{if(confirm('Reset the all-time spend counter?')){S.spendAll=0;S.spendDay={};saveSettings();fillSettings();renderRibbon()}};
+// token estimate for the next send
+function countTokens(msgs){let n=0;for(const m of msgs){const c=m.content;if(typeof c==='string')n+=c.length/4;else for(const p of c){if(p.type==='text')n+=p.text.length/4;else if(p.type==='image_url')n+=1100;else if(p.type==='input_audio')n+=600}}return Math.ceil(n)}
+function estimate(model,pending){const m=modelById(model);if(!m||!CUR)return null;const msgs=buildMessages(model,pending);const inTok=countTokens(msgs);const outTok=thinks(m)?2500:900;const cost=(inTok*priceIn(m)+outTok*priceOut(m))/1e6;const ctx=m.context_length||0;return{inTok,outTok,cost,pct:ctx?Math.round(inTok/ctx*100):null}}
+let estT;function updateEst(){clearTimeout(estT);estT=setTimeout(()=>{const e=estimate(S.model,{text:$('#input').value,att:ATT});const el=$('#est'),t=$('#estTxt'),cb=$('#compactBtn');if(!e){t.textContent='';cb.style.display='none';return}
+  const day=S.spendDay[today()]||0;t.textContent=`≈ ${fmtUsd(e.cost)} this send · ${e.inTok>999?(e.inTok/1000).toFixed(1)+'k':e.inTok} tokens${e.pct!=null?` · ctx ${e.pct}%`:''}`;el.classList.toggle('warn',e.cost>S.confirmAbove||(e.pct||0)>=S.compactAt);el.classList.toggle('over',day+e.cost>S.budgetDay);
+  cb.style.display=(e.pct||0)>=S.compactAt&&CUR.messages.length>6?'':'none'},120)}
+$('#compactBtn').onclick=()=>compact(false);
+async function helperCall(system,user,maxTokens){const model=helperModel();const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+S.apiKey,'Content-Type':'application/json','HTTP-Referer':'https://local.kinfolk','X-Title':'Kinfolk'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:user}],max_tokens:maxTokens,temperature:0.3,usage:{include:true}})});if(!r.ok)throw new Error('Helper '+r.status);const j=await r.json();const cost=j.usage?.cost||0;addSpend(cost);return{text:j.choices?.[0]?.message?.content||'',cost,model}}
+async function compact(auto){if(ABORT||!CUR)return;const keep=4;const eligible=CUR.messages.filter(m=>!m.error&&!m.live);if(eligible.length<=keep+2)return auto?null:toast('Too short to compact');
+  const old=eligible.slice(0,eligible.length-keep),recent=eligible.slice(-keep);const transcript=old.map(m=>`${m.compact?'EARLIER SUMMARY':m.role.toUpperCase()}: ${splitFx(m.text||'').text}${(m.attachments||[]).length?`\n[attached: ${m.attachments.map(a=>a.name).join(', ')}]`:''}`).join('\n\n').slice(0,240000);
+  toast(auto?'Auto-compacting…':'Compacting…');
+  try{const r=await helperCall('You compress a conversation so another model can continue it seamlessly. Write a dense briefing: what the user is doing and why; every decision made; facts, names, numbers, constraints; current state of any code, files or designs (include key snippets if short); open questions and what should happen next. Plain text, no preamble, no commentary. Keep everything load-bearing, drop pleasantries.',transcript,1800);
+    CUR.archive=(CUR.archive||[]).concat(old);CUR.messages=[{role:'user',text:`[Compacted briefing of the earlier conversation — written ${new Date().toLocaleString()}]\n\n${r.text}`,compact:true,cost:r.cost,model:r.model},...recent];
+    renderChat();renderRibbon(r.cost);await saveConv();updateEst();toast(`Compacted ${old.length} messages for ${fmtUsd(r.cost)}`)}catch(e){toast('Compaction failed: '+e.message)}}
+async function autoTitle(){if(!S.autoTitle||!CUR||CUR.titled||CUR.messages.length<2)return;try{const u=CUR.messages.find(m=>m.role==='user'&&!m.compact),a=CUR.messages.find(m=>m.role==='assistant'&&!m.error);const r=await helperCall('Give this chat a title of at most 6 words. No quotes, no punctuation at the end, no emojis. Output only the title.',`USER: ${(u?.text||'').slice(0,1200)}\n\nASSISTANT: ${(a?.text||'').slice(0,800)}`,24);const t=r.text.trim().replace(/^["'“]|["'”.]$/g,'');if(t){CUR.title=t.slice(0,60);CUR.titled=true;CUR.extraCost=(CUR.extraCost||0)+r.cost;await DB.put('convs',CUR);await loadConvs();renderConvList();renderRibbon()}}catch{}}
+
+/* ---------- themes ---------- */
+const THEMES={afterhours:['Afterhours','#120E1A','#FF3D8A','#3DE1FF'],bluehour:['Blue hour','#0E1524','#6EA8FF','#FFC46E'],velvet:['Velvet','#170D12','#E0446A','#F2C57C'],acid:['Acid','#0F130F','#C6FF4A','#FF7AD9'],daylight:['Daylight','#FAF7F2','#E0457B','#1F8FA8'],fog:['Fog','#F1F4F8','#3B6EF2','#E08A2E']};
+const isLight=t=>['daylight','fog'].includes(t);
+function setTheme(t){S.theme=t;if(isLight(t))S.lastLight=t;else S.lastDark=t;document.documentElement.dataset.theme=t;document.querySelector('meta[name=theme-color]').content=THEMES[t][1];$('#modeBtn').innerHTML=isLight(t)?'<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>':'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';saveSettings();renderThemes()}
+function renderThemes(){$('#themes').innerHTML=Object.entries(THEMES).map(([k,[n,bg,a,b]])=>`<button class="theme ${S.theme===k?'on':''}" data-t="${k}"><div class="sw"><i style="background:${bg};flex:2"></i><i style="background:${a}"></i><i style="background:${b}"></i></div><small>${n}</small></button>`).join('');$('#themes').querySelectorAll('.theme').forEach(b=>b.onclick=()=>setTheme(b.dataset.t))}
+$('#modeBtn').onclick=()=>setTheme(isLight(S.theme)?S.lastDark:S.lastLight);
+
+/* ---------- models ---------- */
+let MODELS=[],pickCb=null;
+const P={
+  top:/^(openrouter\/auto|openai\/(gpt-5(?!.*(mini|nano|chat))|o3(?!-mini)|o4(?!-mini)|gpt-4\.1$)|anthropic\/claude-(opus|sonnet)-[45]|google\/gemini-(2\.5-pro|3)|x-ai\/grok-4(?!.*(fast|mini))|deepseek\/deepseek-(r1$|r1-0528$|chat-v3|v3)|meta-llama\/llama-4-maverick|qwen\/qwen3-(235b|coder$|max)|moonshotai\/kimi-k2|z-ai\/glm-4\.[5-9]$|mistralai\/(mistral-large|mistral-medium-3))/,
+  major:/^(openai|anthropic|google|x-ai|deepseek|meta-llama|qwen|moonshotai|z-ai|mistralai|cohere|amazon|microsoft|nvidia|perplexity|inception|minimax|baidu|tencent)\//,
+  coding:/(coder|codestral|devstral|code|gpt-5|claude-(sonnet|opus|haiku)|gemini-(2\.5|3)|grok-4|deepseek|kimi-k2|glm-4\.[5-9]|\/o[34]|gpt-4\.1)/,
+  writing:/(claude|openai\/gpt-(5|4\.1)|gemini-(2\.5|3)|mistral-(large|medium)|command-a|llama-4|kimi-k2|grok-4)/,
+  noisy:/:(nitro|floor|online|thinking|extended)|-exp|preview|beta|-\d{4}-\d{2}-\d{2}/,
+  specialist:/(coder|codestral|devstral|embed|guard|moderation|whisper|tts|image-gen|dall|imagen|veo|sora)/
+};
+const THINKS=/(r1|\/o[34]|thinking|reason|grok-4|opus|gpt-5(?!.*(mini|nano|chat))|magistral|qwq|gemini-(2\.5|3)-pro)/;
+const thinks=m=>THINKS.test(m.id)||(m.supported_parameters||[]).includes('reasoning');
+const priceIn=m=>parseFloat(m.pricing?.prompt||0)*1e6,priceOut=m=>parseFloat(m.pricing?.completion||0)*1e6,blended=m=>priceIn(m)+3*priceOut(m);
+const mods=m=>m.architecture?.input_modalities||[];
+function tier(m){const id=m.id,i=priceIn(m),o=priceOut(m);if(/:free$/.test(id)||(i===0&&o===0))return 'free';if(/(mini|nano|lite|haiku|small|tiny|instant|-[1-9]b\b|-1[0-4]b\b)/.test(id)||(i<=0.4&&o<=2))return 'light';if(o>=10||/(opus|\/o3(?!-mini)|grok-4(?!-fast)|gpt-5-pro|deepseek-r1$|gemini-(2\.5|3)-pro|gpt-4\.5)/.test(id))return 'deep';return 'everyday'}
+const TIERWORD={light:'light',everyday:'everyday',deep:'deep',free:'free'};
+// typical turn: ~4k tokens in (prompt + growing history), ~900 out, ~2.5k out if the model thinks
+const perTurn=m=>(4000*priceIn(m)+(thinks(m)?2500:900)*priceOut(m))/1e6;
+const turnsPerDay=m=>{const c=perTurn(m);return c?Math.floor(S.budgetDay/c):Infinity};
+const fmtTurns=n=>n===Infinity?'∞':n>999?'999+':String(n);
+const TIERS=[['any','Any tier'],['light','Light'],['everyday','Everyday'],['deep','Deep'],['free','Free']];
+const USES=[['any','Anything'],['think','Think & brainstorm'],['build','Build & code'],['design','Design & write'],['long','Long docs'],['vision','Sees images'],['voice','Hears voice']];
+const USEFN={any:()=>true,think:m=>!P.specialist.test(m.id)&&(P.writing.test(m.id)||P.top.test(m.id)||thinks(m)),build:m=>P.coding.test(m.id),design:m=>P.writing.test(m.id)&&!P.specialist.test(m.id),long:m=>(m.context_length||0)>=400000,vision:m=>mods(m).includes('image'),voice:m=>mods(m).includes('audio')};
+const TIERHINT={any:'Everything from the major labs. Narrow by tier to match the job.',light:'Fast and cheap: quick questions, chatter, drafts, summaries. Practically unlimited at your budget.',everyday:'Your daily drivers for building and design. Solid quality, reasonable price.',deep:'Maximum thinking for hard problems and things you\'ll ship. Slow and pricey — use on purpose.',free:'No cost. Rate-limited, often slower, sometimes trains on your data.'};
+let FILT={thinks:false,favs:false,cmp:false},CMP=[];
+function refModel(){if(S.refModel&&modelById(S.refModel))return modelById(S.refModel);const ops=MODELS.filter(m=>/^anthropic\/claude-opus/.test(m.id)&&!/:/.test(m.id)).sort((a,b)=>(b.created||0)-(a.created||0));return ops[0]||null}
+function ratio(m){const r=refModel();if(!r||!blended(r))return '';const x=blended(m)/blended(r);return (x<0.01?'<0.01':x<1?x.toFixed(2):x<10?x.toFixed(1):Math.round(x))+'× '+shortName(r.id).replace(/^Claude /,'')}
+function helperModel(){if(S.helperModel&&modelById(S.helperModel))return S.helperModel;const prefs=[/^google\/gemini-2\.5-flash-lite$/,/^openai\/gpt-5-nano$/,/^google\/gemini-2\.5-flash$/,/^openai\/gpt-4\.1-nano$/,/^anthropic\/claude-haiku/,/^openai\/gpt-4\.1-mini$/];for(const r of prefs){const m=MODELS.find(x=>r.test(x.id));if(m)return m.id}const c=MODELS.filter(m=>tier(m)==='light'&&P.major.test(m.id)&&(m.context_length||0)>=100000&&blended(m)>0).sort((a,b)=>blended(a)-blended(b));return c[0]?.id||S.model}
+async function fetchModels(force){const c=await kvGet('models');if(c&&!force&&Date.now()-c.t<86400e3){MODELS=c.list;return}
+  try{const r=await fetch('https://openrouter.ai/api/v1/models');const j=await r.json();MODELS=j.data.filter(m=>m.architecture?.output_modalities?.includes('text')!==false);await kvSet('models',{t:Date.now(),list:MODELS})}catch(e){if(c)MODELS=c.list;else toast('Could not load models — check connection')}}
+const modelById=id=>MODELS.find(m=>m.id===id);
+const modelSupports=(id,mod)=>mods(modelById(id)||{}).includes(mod);
+const shortName=id=>{const m=modelById(id);return m?m.name.replace(/^[^:]+: /,''):(id||'').split('/').pop()};
+function renderModelSheet(){$('#segTier').innerHTML='<div class="lbl">Tier</div>'+TIERS.map(([k,l])=>`<button class="tab ${S.pick.tier===k?'on':''}" data-k="${k}">${l}</button>`).join('');$('#segUse').innerHTML='<div class="lbl">For</div>'+USES.map(([k,l])=>`<button class="tab ${S.pick.use===k?'on':''}" data-k="${k}">${l}</button>`).join('');
+  $('#segTier').querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.pick.tier=b.dataset.k;saveSettings();renderModelSheet()});$('#segUse').querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.pick.use=b.dataset.k;saveSettings();renderModelSheet()});
+  $('#modelTitle').textContent=pickCb?'Pick a model for a second opinion':'Models';$('#sortSel').value=S.sort||'rec';$('#filters').classList.toggle('open',!!S.pickOpen);$('#filtSum').classList.toggle('open',!!S.pickOpen);const SORTW={rec:'Recommended',cheap:'Cheapest',newest:'Newest',ctx:'Biggest context',pricey:'Priciest'};$('#filtTxt').textContent=[TIERS.find(t=>t[0]===S.pick.tier)[1],USES.find(u=>u[0]===S.pick.use)[1],SORTW[S.sort||'rec'],FILT.thinks?'thinks':'',FILT.favs?'★':'',FILT.cmp?'compare':''].filter(Boolean).join(' · ');document.querySelectorAll('.toolbar .tab').forEach(b=>b.classList.toggle('on',!!FILT[b.dataset.f]));renderModelList()}
+document.querySelectorAll('.toolbar .tab').forEach(b=>b.onclick=()=>{FILT[b.dataset.f]=!FILT[b.dataset.f];if(b.dataset.f==='cmp'&&!FILT.cmp)CMP=[];renderModelSheet()});
+$('#sortSel').onchange=e=>{S.sort=e.target.value;saveSettings();renderModelSheet()};
+$('#filtSum').onclick=()=>{S.pickOpen=!S.pickOpen;saveSettings();renderModelSheet()};
+$('#cmpClear').onclick=()=>{CMP=[];renderModelList()};
+$('#cmpGo').onclick=()=>renderCompare();
+function renderCompare(){const ms=CMP.map(modelById).filter(Boolean);if(ms.length<2)return toast('Pick at least two');const r=refModel();const rows=[['Tier',m=>`<span class="tier ${tier(m)}">${TIERWORD[tier(m)]}</span>`],['Per typical turn',m=>fmtUsd(perTurn(m)),m=>-perTurn(m)],['Turns/day at budget',m=>fmtTurns(turnsPerDay(m)),m=>turnsPerDay(m)],['Input $/M',m=>fmtPrice(m.pricing?.prompt),m=>-priceIn(m)],['Output $/M',m=>fmtPrice(m.pricing?.completion),m=>-priceOut(m)],[r?'vs '+shortName(r.id):'Blended',m=>r?ratio(m):'$'+blended(m).toFixed(2),m=>-blended(m)],['Context',m=>fmtCtx(m.context_length||0),m=>m.context_length||0],['Thinks',m=>thinks(m)?'yes':'—'],['Sees images',m=>mods(m).includes('image')?'yes':'—'],['Hears audio',m=>mods(m).includes('audio')?'yes':'—'],['Released',m=>m.created?new Date(m.created*1000).toLocaleDateString(undefined,{month:'short',year:'numeric'}):'—',m=>m.created||0]];
+  let html=`<table class="cmp"><tr><th></th>${ms.map(m=>`<th>${esc(shortName(m.id))}<br><span style="color:var(--second)">${esc(m.id.split('/')[0])}</span></th>`).join('')}</tr>`;
+  for(const[label,fn,score]of rows){let best=-1;if(score){const sc=ms.map(score);const mx=Math.max(...sc);if(sc.filter(x=>x===mx).length===1)best=sc.indexOf(mx)}html+=`<tr><td>${label}</td>${ms.map((m,i)=>`<td class="${i===best?'best':''}">${fn(m)}</td>`).join('')}</tr>`}
+  html+=`<tr><td></td>${ms.map(m=>`<td><button data-id="${esc(m.id)}">Use</button></td>`).join('')}</tr></table><p class="hint" style="margin:12px 0 0">Highlighted = best in row. "Typical turn" assumes ~4k tokens in and ~900 out (2.5k if the model thinks). Turns/day uses your daily budget.</p><button class="btn ghost sm" id="cmpBack" style="margin-top:10px">← Back to list</button>`;
+  $('#modelList').innerHTML=html;$('#cmpBar').style.display='none';$('#modelList').querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>{const id=b.dataset.id;closeSheets();if(pickCb){const cb=pickCb;pickCb=null;cb(id)}else setModel(id)});$('#cmpBack').onclick=renderModelList}
+function renderModelList(){const q=$('#modelSearch').value.trim().toLowerCase();let list;
+  if(q)list=MODELS.filter(m=>(m.id+' '+m.name).toLowerCase().includes(q)).slice(0,80);
+  else{list=MODELS.filter(m=>(P.major.test(m.id)||m.id==='openrouter/auto')&&!P.noisy.test(m.id)&&(S.pick.tier==='any'?tier(m)!=='free':tier(m)===S.pick.tier)&&USEFN[S.pick.use](m));if(S.pick.tier==='any')list=list.filter(m=>!/:free$/.test(m.id))}
+  if(FILT.thinks)list=list.filter(thinks);if(FILT.favs)list=list.filter(m=>S.favs.includes(m.id));
+  const auto=(a,b)=>(a.id==='openrouter/auto'?-1:b.id==='openrouter/auto'?1:0);const so=S.sort||'rec';const score=m=>(P.top.test(m.id)?2:0)+(P.major.test(m.id)?1:0);
+  list.sort((a,b)=>auto(a,b)||(so==='cheap'?perTurn(a)-perTurn(b):so==='pricey'?perTurn(b)-perTurn(a):so==='ctx'?(b.context_length||0)-(a.context_length||0):so==='newest'?(b.created||0)-(a.created||0):(score(b)-score(a))||(b.created||0)-(a.created||0)));
+  const cheapest=list.filter(m=>perTurn(m)>0).sort((a,b)=>perTurn(a)-perTurn(b))[0];
+  $('#modelHint').textContent=(TIERHINT[S.pick.tier]||'')+(list.length&&!q?` ${list.length} models.`:'')+(cheapest&&!q?` Cheapest here ≈ ${fmtUsd(perTurn(cheapest))}/turn, ~${fmtTurns(turnsPerDay(cheapest))} turns a day at your budget.`:'');
+  $('#modelList').innerHTML=list.length?list.map(m=>{const md=mods(m),t=tier(m),tp=perTurn(m),tpd=turnsPerDay(m);return `<div class="mrow ${m.id===S.model?'sel':''}" data-id="${esc(m.id)}">${FILT.cmp?`<input type="checkbox" ${CMP.includes(m.id)?'checked':''} aria-label="Compare">`:''}<div class="info"><div class="n"><span>${esc(m.name.replace(/^[^:]+: /,''))}</span><span class="tier ${t}">${TIERWORD[t]}</span>${thinks(m)?'<span class="mod">thinks</span>':''}${priceOut(m)>=20?'<span class="tier money">$$$</span>':''}</div><div class="d"><span class="prov">${esc(m.id.split('/')[0])}</span><span>${fmtCtx(m.context_length||0)} ctx</span><span>${fmtPrice(m.pricing?.prompt)} / ${fmtPrice(m.pricing?.completion)} per M</span>${md.includes('image')?'<span class="mod">img</span>':''}${md.includes('audio')?'<span class="mod">audio</span>':''}${md.includes('file')?'<span class="mod">pdf</span>':''}</div>${tp?`<div class="d2"><span class="turns">≈ ${fmtUsd(tp)}/turn · ~${fmtTurns(tpd)} turns/day</span>${m.id!==refModel()?.id?`<span class="ratio">${ratio(m)}</span>`:''}</div>`:''}</div><button class="star ${S.favs.includes(m.id)?'on':''}" aria-label="Favorite">★</button></div>`}).join(''):'<p class="hint" style="margin:20px 0">Nothing matches. Loosen a filter or search by name.</p>';
+  $('#cmpBar').style.display=FILT.cmp?'flex':'none';$('#cmpCount').textContent=CMP.length?`${CMP.length} selected (up to 4)`:'Tick 2–4 models';
+  $('#modelList').querySelectorAll('.mrow').forEach(r=>{const id=r.dataset.id;r.querySelector('.star').onclick=e=>{e.stopPropagation();S.favs=S.favs.includes(id)?S.favs.filter(x=>x!==id):[...S.favs,id];saveSettings();renderModelList()};
+    const cb=r.querySelector('input');if(cb){cb.onclick=e=>e.stopPropagation();cb.onchange=()=>{if(cb.checked){if(CMP.length>=4){cb.checked=false;return toast('Four is the limit')}CMP.push(id)}else CMP=CMP.filter(x=>x!==id);$('#cmpCount').textContent=CMP.length?`${CMP.length} selected (up to 4)`:'Tick 2–4 models'}}
+    r.onclick=()=>{if(FILT.cmp){const c=r.querySelector('input');c.checked=!c.checked;c.onchange();return}closeSheets();if(pickCb){const cbk=pickCb;pickCb=null;cbk(id)}else setModel(id)}})}
+function setModel(id){S.model=id;saveSettings();const m=modelById(id);$('#modelName').textContent=m?m.name.replace(/^[^:]+: /,''):id||'Choose a model';$('#modelMeta').textContent=m?`${m.id.split('/')[0]} · ${fmtCtx(m.context_length||0)} · ${fmtUsd(perTurn(m))}/turn`:'';if(CUR&&!CUR.messages.length){CUR.model=id;renderChat()}renderRibbon();updateEst()}
+
+/* ---------- conversations ---------- */
+let CUR=null,CONVS=[];
+async function loadConvs(){CONVS=(await DB.all('convs')).sort((a,b)=>b.updated-a.updated)}
+function newConv(){CUR={id:uid(),title:'',model:S.model,created:Date.now(),updated:Date.now(),messages:[]};renderChat();renderConvList();renderRibbon()}
+async function saveConv(){if(!CUR||!CUR.messages.length)return;CUR.updated=Date.now();if(!CUR.title){const f=CUR.messages.find(m=>m.role==='user'&&!m.compact);CUR.title=(f?.text||(f?.audioNote?'Voice note':'Chat')).slice(0,60)}await DB.put('convs',CUR);await loadConvs();renderConvList()}
+function renderConvList(){const q=($('#convSearch').value||'').trim().toLowerCase();const list=CONVS.filter(c=>!q||(c.title+' '+c.messages.map(m=>m.text||'').join(' ')).toLowerCase().includes(q));
+  $('#convList').innerHTML=list.map(c=>`<div class="conv ${CUR&&c.id===CUR.id?'active':''}" data-id="${c.id}"><div class="t">${esc(c.title||'Untitled')}<span class="m">${new Date(c.updated).toLocaleDateString(undefined,{month:'short',day:'numeric'})} · ${esc((c.model||'').split('/').pop())} · ${fmtUsd(convCost(c))}</span></div><button class="x" data-r="1" aria-label="Rename">✎</button><button class="x" aria-label="Delete">✕</button></div>`).join('')||'<p class="hint" style="margin:20px 8px">No chats yet.</p>';
+  $('#convList').querySelectorAll('.conv').forEach(el=>{el.onclick=()=>{CUR=CONVS.find(c=>c.id===el.dataset.id);if(CUR.model&&modelById(CUR.model))setModel(CUR.model);renderChat();renderRibbon();closeSheets()};el.querySelector('[data-r]').onclick=async e=>{e.stopPropagation();const c=CONVS.find(x=>x.id===el.dataset.id);const v=prompt('Rename chat',c.title);if(v&&v.trim()){c.title=v.trim();await DB.put('convs',c);renderConvList()}};el.querySelector('.x').onclick=async e=>{e.stopPropagation();if(!confirm('Delete this chat?'))return;await DB.del('convs',el.dataset.id);if(CUR&&CUR.id===el.dataset.id)newConv();await loadConvs();renderConvList()}})}
+
+/* ---------- effects ---------- */
+const FX=['pop','slam','shake','glow','whisper','confetti'];let pendingFx='';
+const FX_RE=/^\s*\[\[fx:([a-z]+)\]\]\s*\n?/i;
+function splitFx(text){const m=(text||'').match(FX_RE);return m?{fx:m[1].toLowerCase(),text:text.replace(FX_RE,'')}:{fx:'',text:text||''}}
+function applyFx(el,fx){if(!S.anim||!fx)return;if(fx==='confetti'){confetti();el.classList.add('fx-pop')}else if(FX.includes(fx))el.classList.add('fx-'+fx)}
+function confetti(){const cv=$('#confetti'),ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const cs=getComputedStyle(document.documentElement);const cols=[cs.getPropertyValue('--accent'),cs.getPropertyValue('--second'),'#fff',cs.getPropertyValue('--rose')];const ps=Array.from({length:120},()=>({x:cv.width/2,y:cv.height*.6,vx:(Math.random()-.5)*14,vy:-Math.random()*16-4,r:Math.random()*5+3,c:cols[Math.floor(Math.random()*cols.length)],a:Math.random()*6}));let t=0;(function f(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.45;p.a+=.1;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=p.c;ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);ctx.restore()});if(++t<110)requestAnimationFrame(f);else ctx.clearRect(0,0,cv.width,cv.height)})()}
+const fxMenu=$('#fxMenu');fxMenu.innerHTML=FX.map(f=>`<button data-f="${f}">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')+'<button data-f="">No effect</button>';
+fxMenu.querySelectorAll('button').forEach(b=>b.onclick=()=>{pendingFx=b.dataset.f;$('#send').classList.toggle('hasfx',!!pendingFx);fxMenu.classList.remove('open');fxMenu.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.f===pendingFx));if(pendingFx)toast('Next message: '+pendingFx)});
+let holdT=null,held=false;const sb=$('#send');
+sb.addEventListener('pointerdown',()=>{held=false;holdT=setTimeout(()=>{held=true;fxMenu.classList.add('open')},450)});
+sb.addEventListener('pointerup',()=>{clearTimeout(holdT);if(!held)send()});sb.addEventListener('pointerleave',()=>clearTimeout(holdT));sb.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('pointerdown',e=>{if(!fxMenu.contains(e.target)&&e.target!==sb&&!sb.contains(e.target))fxMenu.classList.remove('open')});
+
+/* ---------- rendering ---------- */
+marked.setOptions({breaks:true,gfm:true});
+const FILE_RE=/```([\w+#.-]*)[ \t]+file=([^\s`]+)[ \t]*\n([\s\S]*?)```/g;
+const OPS_RE=/```memory-ops[ \t]*\n([\s\S]*?)```/g;
+function extractBlocks(text){const files=[];let md=text.replace(FILE_RE,(_,lang,name,body)=>{files.push({lang:lang.toLowerCase(),name,content:body.replace(/\n$/,'')});return `\n\n<p class="fileslot" data-i="${files.length-1}"></p>\n\n`});md=md.replace(OPS_RE,()=>`\n\n<p class="opslot"></p>\n\n`);return{md,files}}
+function renderBody(el,m,live){const text=splitFx(m.text||'').text;const{md,files}=extractBlocks(text);el.innerHTML=DOMPurify.sanitize(marked.parse(md||(live?'…':'')));
+  el.querySelectorAll('.fileslot').forEach(s=>{const f=files[+s.dataset.i];if(!f)return;const card=document.createElement('div');card.className='filecard';const ext=f.name.split('.').pop();card.innerHTML=`<div class="fi">${esc(ext.slice(0,4))}</div><div class="fn"><b>${esc(f.name)}</b><span>${live?'writing…':fmtSize(new Blob([f.content]).size)}</span></div>${!live&&['html','svg'].includes(ext)?'<button class="sec">Preview</button>':''}<button ${live?'disabled':''}>Download</button>`;
+    if(!live){card.querySelector('button:last-child').onclick=()=>buildAndDownload(f).catch(e=>toast(e.message));const pv=card.querySelector('.sec');if(pv)pv.onclick=()=>window.open(URL.createObjectURL(new Blob([f.content],{type:ext==='svg'?'image/svg+xml':'text/html'})),'_blank')}
+    s.replaceWith(card)});
+  el.querySelectorAll('.opslot').forEach(s=>{const c=document.createElement('div');c.className='memcard';if(live){c.innerHTML='<div class="ops">Updating memory…</div>'}else{const r=m.memResult;if(r){c.innerHTML=`<div class="ops"><b>Memory updated</b> · +${r.a} added, ${r.u} changed, ${r.d} removed</div>${r.before&&!r.undone?'<button data-a="undo">Undo</button>':''}<button data-a="view">View</button>`;const u=c.querySelector('[data-a=undo]');if(u)u.onclick=()=>{MEM.entries=JSON.parse(r.before);r.undone=true;logMem('you: undo');saveMem();toast('Memory restored');u.remove()};c.querySelector('[data-a=view]').onclick=()=>{openSheet('settingsSheet');setTimeout(()=>$('#memList').scrollIntoView({block:'start'}),50)}}else c.innerHTML='<div class="ops">Memory block could not be parsed.</div>'}s.replaceWith(c)});
+  if(!live)el.querySelectorAll('pre').forEach(p=>{const bar=document.createElement('div');bar.className='codebar';const b=document.createElement('button');b.textContent='Copy';b.onclick=()=>navigator.clipboard.writeText(p.innerText).then(()=>toast('Copied'));bar.appendChild(b);p.before(bar)})}
+function plainText(md){return splitFx(md).text.replace(FILE_RE,'(file attached)').replace(OPS_RE,'').replace(/```[\s\S]*?```/g,'(code)').replace(/[*_`#>|]{1,3}/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1')}
+function msgEl(m,i){const w=document.createElement('div');w.className='msg '+m.role+(m.fresh?' fresh':'');w.dataset.i=i;const {fx,text}=splitFx(m.text);
+  if(m.compact){w.className='msg compact';w.innerHTML=`<div class="cc"><b>Compacted</b> · earlier conversation folded into a briefing${m.cost?` · ${fmtUsd(m.cost)}`:''} · tap to read<pre>${esc(m.text)}</pre></div>`;w.querySelector('.cc').onclick=()=>w.querySelector('.cc').classList.toggle('open');return w}
+  if(m.role==='user'){const chips=(m.attachments||[]).map(a=>`<span class="chip">${esc(a.name)}</span>`).join('')+(m.audioNote?'<span class="chip">🎙 voice note</span>':'');w.innerHTML=`<div style="max-width:88%">${fx?`<div class="fxtag">${fx}</div>`:''}${chips?`<div class="chips">${chips}</div>`:''}${text?`<div class="bubble">${esc(text)}</div>`:''}<div class="actions"><button data-a="edit">Edit</button><button data-a="copy">Copy</button></div></div>`;if(m.fresh)applyFx(w.querySelector('.bubble')||w,fx);
+    w.querySelector('.actions').onclick=e=>{const a=e.target.dataset.a;if(a==='copy')navigator.clipboard.writeText(text).then(()=>toast('Copied'));if(a==='edit'){if(ABORT)return;$('#input').value=text;autoGrow();ATT=[...(m.attachments||[])];renderAttach();CUR.messages.splice(i);renderChat();$('#input').focus();toast('Editing — send to branch from here')}}}
+  else{if(m.reasoning&&!m.live){const d=document.createElement('details');d.className='thinking';d.innerHTML=`<summary>Thoughts · ${(m.reasoning.length/1000).toFixed(1)}k chars</summary><pre>${esc(m.reasoning)}</pre>`;w.appendChild(d)}
+    if(fx&&!m.live){const t=document.createElement('div');t.className='fxtag';t.textContent=fx;w.appendChild(t)}
+    const b=document.createElement('div');b.className='body';w.appendChild(b);if(m.error){b.innerHTML=`<div class="err">${esc(m.error)}</div>`}else{renderBody(b,m,!!m.live);if(m.fresh&&!m.live)applyFx(b,fx)}
+    if(!m.live&&!m.error){const a=document.createElement('div');a.className='actions';a.innerHTML=`<button data-a="listen">Listen</button><button data-a="copy">Copy</button><button data-a="retry">Retry</button><button data-a="other">Another model</button>${m.cost!=null?`<span class="cost">${fmtUsd(m.cost)} · ${esc(shortName(m.model))}</span>`:`<span class="cost">${esc(shortName(m.model))}</span>`}`;
+      a.onclick=e=>{const act=e.target.dataset.a;if(act==='listen')speak(plainText(m.text||''),e.target);if(act==='copy')navigator.clipboard.writeText(splitFx(m.text||'').text).then(()=>toast('Copied'));if(act==='retry')retry(i);if(act==='other'){pickCb=id=>retry(i,id);openSheet('modelSheet')}};w.appendChild(a)}}
+  delete m.fresh;return w}
+function renderChat(){const c=$('#chat');c.innerHTML='';if(!CUR||!CUR.messages.length){c.innerHTML=`<div class="empty"><span class="logo">${LOGO}</span><h1>${S.model?esc(shortName(S.model)):'Pick a model'} is on.</h1><p>Ask for anything — code, a spreadsheet, a slide deck, a PDF, or just talk. Files in, files out. Hold the waveform for a voice note; hold Send for an effect.</p><div class="quick"><button data-q="Make me a spreadsheet of ">Spreadsheet</button><button data-q="Build an HTML slide deck about ">Slide deck</button><button data-q="Write me a PDF brief on ">PDF brief</button><button data-q="Review this and tell me what's wrong: ">Review</button><button data-q="What do you remember about me? Anything stale I should update?">Memory check</button></div></div>`;c.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{$('#input').value=b.dataset.q;autoGrow();$('#input').focus();const t=$('#input');t.setSelectionRange(t.value.length,t.value.length)});return}
+  CUR.messages.forEach((m,i)=>c.appendChild(msgEl(m,i)));c.scrollTop=c.scrollHeight;updateEst()}
+
+/* ---------- file building ---------- */
+async function buildAndDownload(f){const ext=f.name.split('.').pop().toLowerCase();let blob;
+  if(ext==='xlsx'||f.lang==='xlsx'){const XLSX=await lib('xlsx');let data;try{data=JSON.parse(f.content)}catch{data={Sheet1:f.content.split('\n').map(r=>r.split(','))}}if(Array.isArray(data))data={Sheet1:data};const wb=XLSX.utils.book_new();for(const[n,rows]of Object.entries(data)){const aoa=Array.isArray(rows[0])?rows:[Object.keys(rows[0]||{}),...rows.map(r=>Object.values(r))];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),n.slice(0,31))}blob=new Blob([XLSX.write(wb,{type:'array',bookType:'xlsx'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+  else if(ext==='docx'){blob=await mdToDocx(f.content)}
+  else if(ext==='pdf'){blob=await mdToPdf(f.content)}
+  else{const mime={html:'text/html',json:'application/json',csv:'text/csv',md:'text/markdown',svg:'image/svg+xml',txt:'text/plain'}[ext]||'text/plain';blob=new Blob([f.content],{type:mime})}
+  download(f.name,blob);toast('Downloading '+f.name)}
+function inlineRuns(line,D){const runs=[];line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).forEach(p=>{if(!p)return;if(p.startsWith('**'))runs.push(new D.TextRun({text:p.slice(2,-2),bold:true}));else if(p.startsWith('`'))runs.push(new D.TextRun({text:p.slice(1,-1),font:'Consolas'}));else runs.push(new D.TextRun(p))});return runs}
+async function mdToDocx(md){const D=await lib('docx');const ch=[];md.split('\n').forEach(l=>{const h=l.match(/^(#{1,3})\s+(.*)/);if(h){ch.push(new D.Paragraph({heading:[D.HeadingLevel.HEADING_1,D.HeadingLevel.HEADING_2,D.HeadingLevel.HEADING_3][h[1].length-1],children:inlineRuns(h[2],D)}));return}
+  const b=l.match(/^\s*[-*]\s+(.*)/);if(b){ch.push(new D.Paragraph({bullet:{level:0},children:inlineRuns(b[1],D)}));return}
+  const n=l.match(/^\s*\d+[.)]\s+(.*)/);if(n){ch.push(new D.Paragraph({numbering:{reference:'nums',level:0},children:inlineRuns(n[1],D)}));return}
+  if(l.trim()==='')return;ch.push(new D.Paragraph({children:inlineRuns(l,D),spacing:{after:120}}))});
+  const doc=new D.Document({numbering:{config:[{reference:'nums',levels:[{level:0,format:D.LevelFormat.DECIMAL,text:'%1.',alignment:D.AlignmentType.START}]}]},sections:[{children:ch}]});return D.Packer.toBlob(doc)}
+async function mdToPdf(md){const{jsPDF}=await lib('jspdf');const doc=new jsPDF({unit:'pt',format:'letter'});const W=612-96;let y=64;const line=(t,size,bold)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.splitTextToSize(t,W).forEach(s=>{if(y>740){doc.addPage();y=64}doc.text(s,48,y);y+=size*1.35});y+=size*.4};
+  md.split('\n').forEach(l=>{const h=l.match(/^(#{1,3})\s+(.*)/);if(h){y+=6;line(h[2].replace(/\*\*/g,''),[20,16,13][h[1].length-1],true);return}const b=l.match(/^\s*[-*]\s+(.*)/);if(b){line('•  '+b[1].replace(/\*\*/g,''),11);return}if(l.trim()==='')return;line(l.replace(/\*\*/g,''),11)});return doc.output('blob')}
+
+/* ---------- attachments ---------- */
+let ATT=[];
+function renderAttach(){updateEst();$('#attach').innerHTML=ATT.map((a,i)=>`<span class="chip">${a.kind==='audio'?'🎙 ':''}${esc(a.name)}<button data-i="${i}" aria-label="Remove">✕</button></span>`).join('');$('#attach').querySelectorAll('button').forEach(b=>b.onclick=()=>{ATT.splice(+b.dataset.i,1);renderAttach()})}
+const readAs=(file,how)=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r[how](file)});
+async function ingest(file){const name=file.name,ext=name.split('.').pop().toLowerCase();
+  if(file.type.startsWith('image/'))return{kind:'image',name,dataUrl:await readAs(file,'readAsDataURL')};
+  if(ext==='pdf'){const pdfjs=await lib('pdfjs');pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';const doc=await pdfjs.getDocument({data:await readAs(file,'readAsArrayBuffer')}).promise;let t='';for(let i=1;i<=doc.numPages;i++){const pg=await doc.getPage(i);const c=await pg.getTextContent();t+=`\n--- page ${i} ---\n`+c.items.map(x=>x.str).join(' ')}return{kind:'text',name,text:t}}
+  if(['xlsx','xls','csv','tsv'].includes(ext)){const XLSX=await lib('xlsx');const wb=XLSX.read(await readAs(file,'readAsArrayBuffer'),{type:'array'});let t='';wb.SheetNames.forEach(n=>{t+=`\n--- sheet ${n} ---\n`+XLSX.utils.sheet_to_csv(wb.Sheets[n])});return{kind:'text',name,text:t}}
+  if(ext==='docx'){const mm=await lib('mammoth');const r=await mm.extractRawText({arrayBuffer:await readAs(file,'readAsArrayBuffer')});return{kind:'text',name,text:r.value}}
+  const text=await readAs(file,'readAsText');return{kind:'text',name,text:text.length>300000?text.slice(0,300000)+'\n…[truncated]':text}}
+$('#fileBtn').onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange=async e=>{for(const f of e.target.files){try{toast('Reading '+f.name);ATT.push(await ingest(f))}catch(err){toast('Could not read '+f.name+': '+err.message)}}e.target.value='';renderAttach()};
+
+/* ---------- voice: dictation ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
+$('#dictateBtn').onclick=()=>{if(!SR){toast('Dictation is not supported in this browser');return}if(rec){rec.stop();return}
+  rec=new SR();rec.continuous=true;rec.interimResults=true;const base=$('#input').value;let fin='';
+  rec.onresult=e=>{let interim='';fin='';for(const r of e.results){(r.isFinal?fin+=r[0].transcript+' ':interim+=r[0].transcript)}$('#input').value=(base+' '+fin+interim).trim();autoGrow()};
+  rec.onend=()=>{rec=null;$('#dictateBtn').classList.remove('listening')};rec.onerror=()=>{rec=null;$('#dictateBtn').classList.remove('listening')};
+  rec.start();$('#dictateBtn').classList.add('listening')};
+
+/* ---------- voice: recorded note ---------- */
+let mr=null,chunks=[],recStart=0;
+async function startRec(){if(mr)return;if(!S.model||!modelSupports(S.model,'audio')){toast('This model can\'t hear audio. Pick one from the "Audio in" tab, or use the mic to dictate.');return}
+  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(stream);chunks=[];mr.ondataavailable=e=>chunks.push(e.data);mr.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:mr.mimeType});mr=null;$('#recBtn').classList.remove('rec');if(Date.now()-recStart<500)return;try{const wav=await toWav(blob);ATT.push({kind:'audio',name:'voice note ('+Math.round((Date.now()-recStart)/1000)+'s)',b64:wav});renderAttach()}catch(e){toast('Could not process audio: '+e.message)}};mr.start();recStart=Date.now();$('#recBtn').classList.add('rec')}catch(e){toast('Microphone unavailable: '+e.message)}}
+function stopRec(){if(mr&&mr.state==='recording')mr.stop()}
+async function toWav(blob){const ac=new (window.AudioContext||window.webkitAudioContext)();const buf=await ac.decodeAudioData(await blob.arrayBuffer());const ch=buf.numberOfChannels,len=buf.length;const mono=new Float32Array(len);for(let c=0;c<ch;c++){const d=buf.getChannelData(c);for(let i=0;i<len;i++)mono[i]+=d[i]/ch}
+  const rate=buf.sampleRate,out=new ArrayBuffer(44+len*2),v=new DataView(out);const ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};ws(0,'RIFF');v.setUint32(4,36+len*2,true);ws(8,'WAVE');ws(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);ws(36,'data');v.setUint32(40,len*2,true);let o=44;for(let i=0;i<len;i++,o+=2){const s=Math.max(-1,Math.min(1,mono[i]));v.setInt16(o,s<0?s*32768:s*32767,true)}
+  const bytes=new Uint8Array(out);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin)}
+const rb=$('#recBtn');rb.addEventListener('pointerdown',e=>{e.preventDefault();startRec()});rb.addEventListener('pointerup',stopRec);rb.addEventListener('pointercancel',stopRec);rb.addEventListener('pointerleave',stopRec);rb.addEventListener('contextmenu',e=>e.preventDefault());
+
+/* ---------- voice: playback ---------- */
+let speakingBtn=null,audioEl=null;
+const keyFor=n=>(S.keys.find(k=>k.name.trim().toLowerCase()===n)||{}).value||'';
+function stopSpeak(){speechSynthesis.cancel();if(audioEl){audioEl.pause();audioEl=null}if(speakingBtn){speakingBtn.textContent='Listen';speakingBtn=null}}
+async function speak(text,btn){if(speakingBtn){const same=speakingBtn===btn;stopSpeak();if(same)return}text=text.slice(0,4000);if(btn){btn.textContent='Stop';speakingBtn=btn}const done=()=>{if(btn)btn.textContent='Listen';if(speakingBtn===btn)speakingBtn=null;audioEl=null};
+  try{if(S.tts==='elevenlabs'&&keyFor('elevenlabs')){if(btn)btn.textContent='Loading…';const r=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${S.ttsVoice||'21m00Tcm4TlvDq8ikWAM'}?output_format=mp3_44100_128`,{method:'POST',headers:{'xi-api-key':keyFor('elevenlabs'),'Content-Type':'application/json'},body:JSON.stringify({text,model_id:'eleven_multilingual_v2'})});if(!r.ok)throw new Error('ElevenLabs '+r.status);audioEl=new Audio(URL.createObjectURL(await r.blob()));if(btn)btn.textContent='Stop';audioEl.onended=done;audioEl.play();return}
+    if(S.tts==='openai'&&keyFor('openai')){if(btn)btn.textContent='Loading…';const r=await fetch('https://api.openai.com/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+keyFor('openai'),'Content-Type':'application/json'},body:JSON.stringify({model:'tts-1',voice:S.ttsVoice||'nova',input:text})});if(!r.ok)throw new Error('OpenAI TTS '+r.status);audioEl=new Audio(URL.createObjectURL(await r.blob()));if(btn)btn.textContent='Stop';audioEl.onended=done;audioEl.play();return}
+  }catch(e){toast(e.message+' — using device voice');}
+  const u=new SpeechSynthesisUtterance(text);const v=speechSynthesis.getVoices().find(v=>v.voiceURI===S.voice);if(v)u.voice=v;u.rate=1.05;u.onend=u.onerror=done;speechSynthesis.speak(u)}
+function fillVoices(){const sel=$('#sVoice');const vs=speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en')).sort((a,b)=>a.name.localeCompare(b.name));sel.innerHTML='<option value="">Device default</option>'+vs.map(v=>`<option value="${esc(v.voiceURI)}" ${v.voiceURI===S.voice?'selected':''}>${esc(v.name)}</option>`).join('')}
+speechSynthesis.onvoiceschanged=fillVoices;
+
+/* ---------- sending ---------- */
+let ABORT=null;
+function buildMessages(model,pending){model=model||S.model;const sys=S.system.replace('{{now}}',new Date().toLocaleString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'})).replace('{{date}}',new Date().toLocaleDateString()).replace('{{memory}}',memBlock());
+  const cache=S.cache&&/^anthropic\//.test(model);const msgs=[{role:'system',content:cache?[{type:'text',text:sys,cache_control:{type:'ephemeral'}}]:sys}];
+  const src=CUR.messages.filter(m=>!m.error&&!m.live);if(pending)src.push({role:'user',text:pending.text||'',attachments:pending.att||[]});
+  const total=src.filter(m=>m.role==='user').length;let ui=0;
+  const push=(role,content)=>{const last=msgs[msgs.length-1];if(last&&last.role===role&&role==='user'){const toParts=c=>typeof c==='string'?[{type:'text',text:c}]:c;const merged=[...toParts(last.content),...toParts(content)];last.content=merged.length===1&&merged[0].type==='text'?merged[0].text:merged;return}msgs.push({role,content})};
+  for(const m of src){if(m.role==='assistant'){push('assistant',m.text||'');continue}
+    ui++;const age=total-ui,stale=age>S.attachAge;const parts=[];let text=m.text||'';
+    for(const a of m.attachments||[]){if(a.kind==='text')text+=stale?`\n\n<file name="${a.name}">[contents omitted to save tokens — attached ${age} turns ago; ask the user to re-attach if you need it]</file>`:`\n\n<file name="${a.name}">\n${a.text}\n</file>`;else if(stale)text+=`\n\n[${a.kind} attachment "${a.name}" omitted — ${age} turns old]`}
+    if(text)parts.push({type:'text',text});
+    if(!stale)for(const a of m.attachments||[]){if(a.kind==='image')parts.push({type:'image_url',image_url:{url:a.dataUrl}});if(a.kind==='audio')parts.push({type:'input_audio',input_audio:{data:a.b64,format:'wav'}})}
+    if(parts.length)push('user',parts.length===1&&parts[0].type==='text'?parts[0].text:parts)}
+  return msgs}
+async function send(){if(ABORT){ABORT.abort();return}let text=$('#input').value.trim();if(!text&&!ATT.length)return;if(!S.apiKey){openSheet('settingsSheet');toast('Add your OpenRouter API key first');return}if(!S.model){openSheet('modelSheet');return}
+  if(!CUR)newConv();if(ATT.some(a=>a.kind==='image')&&!modelSupports(S.model,'image')){toast('This model can\'t see images. Try the "Vision & files" tab.');return}
+  const m=modelById(S.model);const est=estimate(S.model,{text,att:ATT});
+  if(est&&S.autoCompact&&est.pct>=S.compactAt&&CUR.messages.length>6)await compact(true);
+  if(m&&tier(m)==='deep'&&!CUR.deepOk){if(!confirm(`${shortName(S.model)} is a deep-tier model: ${fmtPrice(m.pricing?.prompt)} in / ${fmtPrice(m.pricing?.completion)} out per M. This send is estimated at ${fmtUsd(est?.cost)}. Use it for this chat?`))return;CUR.deepOk=true}
+  else if(est&&est.cost>S.confirmAbove&&!confirm(`This send is estimated at ${fmtUsd(est.cost)} (${est.inTok>999?(est.inTok/1000).toFixed(1)+'k':est.inTok} tokens in). Go ahead?`))return;
+  const dayNow=S.spendDay[today()]||0;if(est&&dayNow+est.cost>S.budgetDay&&!CUR.overDayOk){if(!confirm(`This would take today past your ${fmtUsd(S.budgetDay)} daily budget (at ${fmtUsd(dayNow)} now). Continue anyway?`))return;CUR.overDayOk=true}
+  if(monthSpend()>=S.budgetMonth&&!CUR.overMonthOk){if(!confirm(`You're at ${fmtUsd(monthSpend())} of your ${fmtUsd(S.budgetMonth)} monthly budget. Continue anyway?`))return;CUR.overMonthOk=true}
+  if(pendingFx)text=`[[fx:${pendingFx}]]\n`+text;pendingFx='';$('#send').classList.remove('hasfx');
+  CUR.messages.push({role:'user',text,attachments:ATT.map(a=>a.kind==='text'?{kind:'text',name:a.name,text:a.text}:a),audioNote:ATT.some(a=>a.kind==='audio'),fresh:true});ATT=[];renderAttach();$('#input').value='';autoGrow();CUR.model=S.model;
+  await run(S.model)}
+async function run(model){const am={role:'assistant',text:'',reasoning:'',live:true,model};CUR.messages.push(am);renderChat();const el=$('#chat').lastElementChild,body=el.querySelector('.body');
+  ABORT=new AbortController();$('#send').classList.add('stop');$('#send').innerHTML='<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg><span class="fxdot"></span>';
+  let lastRender=0,think=null,thinkTxt=null;const draw=()=>{const now=Date.now();if(now-lastRender<80)return;lastRender=now;
+    if(am.reasoning&&!think){think=document.createElement('div');think.className='think-live';think.innerHTML='<div class="tl"><span>Thinking…</span><span>tap to expand</span></div>';thinkTxt=document.createElement('div');think.appendChild(thinkTxt);think.onclick=()=>{think.classList.toggle('exp');think.querySelector('.tl span:last-child').textContent=think.classList.contains('exp')?'tap to shrink':'tap to expand'};el.prepend(think)}
+    if(think){thinkTxt.textContent=am.reasoning;if(!think.classList.contains('exp'))think.scrollTop=think.scrollHeight}
+    if(am.text)renderBody(body,am,true);const c=$('#chat');if(c.scrollHeight-c.scrollTop-c.clientHeight<240)c.scrollTop=c.scrollHeight};
+  try{const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',signal:ABORT.signal,headers:{'Authorization':'Bearer '+S.apiKey,'Content-Type':'application/json','HTTP-Referer':'https://local.kinfolk','X-Title':'Kinfolk'},body:JSON.stringify({model,messages:buildMessages(model),stream:true,temperature:S.temp,usage:{include:true}})});
+    if(!res.ok){let t=await res.text();try{t=JSON.parse(t).error?.message||t}catch{}throw new Error(`${res.status}: ${t}`)}
+    const reader=res.body.getReader(),dec=new TextDecoder();let buf='',usage=null;
+    while(true){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line.startsWith('data:'))continue;const data=line.slice(5).trim();if(data==='[DONE]')continue;try{const j=JSON.parse(data);if(j.error)throw new Error(j.error.message||JSON.stringify(j.error));const d=j.choices?.[0]?.delta;if(d?.content)am.text+=d.content;if(d?.reasoning)am.reasoning+=d.reasoning;if(j.usage)usage=j.usage}catch(e){if(e.message&&!/JSON/.test(e.message))throw e}}draw()}
+    if(usage){am.cost=usage.cost??usage.total_cost??null;am.tokens=usage.total_tokens}if(!am.text&&!am.reasoning)am.error='The model returned nothing. Try again or pick another model.'
+    const ops=[...am.text.matchAll(OPS_RE)].flatMap(x=>{try{const j=JSON.parse(x[1]);return Array.isArray(j)?j:[j]}catch{return[]}});if(ops.length){am.memResult=applyOps(ops,shortName(model));renderMem()}}
+  catch(e){if(e.name==='AbortError'){if(!am.text)am.error='Stopped.'}else am.error=e.message}
+  finally{delete am.live;am.fresh=true;ABORT=null;$('#send').classList.remove('stop');$('#send').innerHTML='<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span class="fxdot"></span>';renderChat();addSpend(am.cost);renderRibbon(am.cost??null);await saveConv();updateEst();if(S.autoRead&&am.text&&!am.error)speak(plainText(am.text));autoTitle()}}
+async function retry(i,model){if(ABORT)return;CUR.messages.splice(i);renderChat();await run(model||S.model)}
+$('#input').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();send()}});
+function autoGrow(){const t=$('#input');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,180)+'px'}
+$('#input').addEventListener('input',()=>{autoGrow();updateEst()});
+
+/* ---------- Obsidian / export ---------- */
+function convToMd(c){const all=[...(c.archive||[]),...c.messages.filter(m=>!m.compact)];c={...c,messages:all};const fm=`---\ndate: ${new Date(c.created).toISOString()}\nmodel: ${c.model||''}\ncost: ${convCost(c).toFixed(4)}\ntags: [ai-chat]\n---\n\n# ${c.title||'Chat'}\n\n`;return fm+c.messages.filter(m=>!m.error).map(m=>m.role==='user'?`## You\n\n${splitFx(m.text).text}${(m.attachments||[]).length?'\n\n_Attached: '+m.attachments.map(a=>a.name).join(', ')+'_':''}`:`## ${shortName(m.model||c.model)}\n\n${splitFx(m.text).text}`).join('\n\n')+'\n'}
+function safeName(s){return String(s).replace(/[\\/:*?"<>|#^[\]]/g,'').trim().slice(0,80)||'Chat'}
+function obsidianOpen(file,md,overwrite){const uri=`obsidian://new?${S.vault?'vault='+encodeURIComponent(S.vault)+'&':''}file=${encodeURIComponent(file)}&content=${encodeURIComponent(md)}${overwrite?'&overwrite=true':''}`;if(uri.length<7000){location.href=uri;toast('Opening Obsidian')}else{download(file.split('/').pop()+'.md',new Blob([md],{type:'text/markdown'}));toast('Too long for a link — saved as .md; drop it in your vault')}}
+function saveToObsidian(){if(!CUR||!CUR.messages.length)return toast('Nothing to save yet');obsidianOpen('AI Chats/'+safeName(CUR.title)+' '+new Date(CUR.created).toISOString().slice(0,10),convToMd(CUR))}
+function memoryToObsidian(){const md=`---\ntags: [ai-memory]\nupdated: ${new Date().toISOString()}\n---\n\n# Assistant memory\n\n${[...MEM.entries].sort((a,b)=>a.key.localeCompare(b.key)).map(e=>`- **${e.key}** — ${e.content} _(${new Date(e.updated).toISOString().slice(0,10)})_`).join('\n')}\n`;obsidianOpen('AI Chats/Assistant memory',md,true)}
+$('#exportAll').onclick=async()=>{const data={exported:new Date().toISOString(),settings:{...S,apiKey:undefined,keys:undefined},memory:MEM,convs:await DB.all('convs')};download('router-backup-'+today()+'.json',new Blob([JSON.stringify(data)],{type:'application/json'}))};
+$('#importAll').onclick=()=>$('#importInput').click();
+$('#importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await readAs(f,'readAsText'));for(const c of j.convs||[])await DB.put('convs',c);if(j.memory?.entries){const r=applyOps(j.memory.entries.map(x=>({op:'add',key:x.key,content:x.content})),'backup');toast(`Imported ${(j.convs||[]).length} chats, ${r.a} memory entries`)}else toast(`Imported ${(j.convs||[]).length} chats`);await loadConvs();renderConvList()}catch(err){toast('Import failed: '+err.message)}e.target.value=''};
+
+/* ---------- sheets & settings UI ---------- */
+function openSheet(id){closeSheets();$('#'+id).classList.add('open');if(id==='modelSheet')renderModelSheet();if(id==='settingsSheet')fillSettings()}
+function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open'));if(document.activeElement)document.activeElement.blur()}
+document.querySelectorAll('.sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s){if(s.id==='modelSheet')pickCb=null;closeSheets()}}));
+$('#menuBtn').onclick=()=>{renderConvList();openSheet('drawerSheet')};
+$('#modelBtn').onclick=()=>{pickCb=null;openSheet('modelSheet')};
+$('#modelSheet').addEventListener('click',e=>{if(e.target===$('#modelSheet')){FILT.cmp=false;CMP=[]}});
+$('#settingsBtn').onclick=()=>openSheet('settingsSheet');
+$('#newChat').onclick=()=>{newConv();closeSheets()};
+$('#modelSearch').addEventListener('input',renderModelList);
+$('#convSearch').addEventListener('input',renderConvList);
+function renderKeys(){$('#keyList').innerHTML=S.keys.map((k,i)=>`<div class="krow"><input class="k" placeholder="name" value="${esc(k.name)}" data-i="${i}" data-f="name"><input type="password" placeholder="key" value="${esc(k.value)}" data-i="${i}" data-f="value" autocomplete="off"><button data-i="${i}" aria-label="Remove">✕</button></div>`).join('');$('#keyList').querySelectorAll('input').forEach(inp=>inp.oninput=()=>{S.keys[+inp.dataset.i][inp.dataset.f]=inp.value.trim();saveSettings()});$('#keyList').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.keys.splice(+b.dataset.i,1);saveSettings();renderKeys()})}
+$('#keyAdd').onclick=()=>{S.keys.push({name:'',value:''});renderKeys();const f=$('#keyList .krow:last-child input');if(f)f.focus()};
+function fillSettings(){$('#sKey').value=S.apiKey;$('#sVault').value=S.vault;$('#sSystem').value=S.system;$('#sAutoRead').checked=S.autoRead;$('#sAnim').checked=S.anim;$('#sTemp').value=S.temp;$('#tempVal').textContent=S.temp;$('#sTts').value=S.tts;$('#sTtsVoice').value=S.ttsVoice;ttsFields();fillVoices();renderThemes();renderKeys();renderMem();fillRef();
+  $('#stChat').textContent=fmtUsd(convCost(CUR));$('#stToday').textContent=fmtUsd(S.spendDay[today()]||0);$('#stAll').textContent=fmtUsd(S.spendAll);$('#stProj').textContent=fmtUsd(monthProj())+(monthProj()>S.budgetMonth?' ⚠':'');
+  $('#sBudgetMonth').value=S.budgetMonth;$('#sBudgetDay').value=S.budgetDay;$('#sConfirm').value=S.confirmAbove;$('#sCompactAt').value=S.compactAt;$('#sAttachAge').value=S.attachAge;$('#sAutoCompact').checked=S.autoCompact;$('#sCache').checked=S.cache;$('#sAutoTitle').checked=S.autoTitle;
+  const hl=MODELS.filter(m=>tier(m)==='light'&&P.major.test(m.id)&&!P.noisy.test(m.id)&&blended(m)>0).sort((a,b)=>blended(a)-blended(b));const hm=helperModel();$('#sHelper').innerHTML=hl.map(m=>`<option value="${esc(m.id)}" ${m.id===hm?'selected':''}>${esc(m.name)} — ${fmtUsd(perTurn(m))}/turn</option>`).join('')}
+const num=(id,k,post)=>{$(id).oninput=e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){S[k]=v;saveSettings();if(post)post()}}};num('#sBudgetMonth','budgetMonth',renderRibbon);num('#sBudgetDay','budgetDay',()=>{renderRibbon();updateEst()});num('#sConfirm','confirmAbove',updateEst);num('#sCompactAt','compactAt',updateEst);num('#sAttachAge','attachAge',updateEst);
+$('#sAutoCompact').onchange=e=>{S.autoCompact=e.target.checked;saveSettings()};$('#sCache').onchange=e=>{S.cache=e.target.checked;saveSettings();updateEst()};$('#sAutoTitle').onchange=e=>{S.autoTitle=e.target.checked;saveSettings()};$('#sHelper').onchange=e=>{S.helperModel=e.target.value;saveSettings()};
+function ttsFields(){$('#devVoiceField').style.display=S.tts==='device'?'':'none';$('#ttsVoiceField').style.display=S.tts==='device'?'none':''}
+$('#sKey').oninput=e=>{S.apiKey=e.target.value.trim();saveSettings()};
+$('#sVault').oninput=e=>{S.vault=e.target.value.trim();saveSettings()};
+$('#sSystem').oninput=e=>{S.system=e.target.value;saveSettings()};
+$('#resetSystem').onclick=()=>{S.system=DEFAULT_SYSTEM;$('#sSystem').value=S.system;saveSettings()};
+$('#sAutoRead').onchange=e=>{S.autoRead=e.target.checked;saveSettings()};
+$('#sAnim').onchange=e=>{S.anim=e.target.checked;saveSettings()};
+$('#sVoice').onchange=e=>{S.voice=e.target.value;saveSettings()};
+$('#sTts').onchange=e=>{S.tts=e.target.value;if(S.tts!=='device'&&!keyFor(S.tts))toast('Add a key named "'+S.tts+'" under Keys');saveSettings();ttsFields()};
+$('#sTtsVoice').oninput=e=>{S.ttsVoice=e.target.value.trim();saveSettings()};
+$('#sTemp').oninput=e=>{S.temp=+e.target.value;$('#tempVal').textContent=S.temp;saveSettings()};
+$('#sRef').onchange=e=>{S.refModel=e.target.value;saveSettings()};
+function fillRef(){const cands=MODELS.filter(m=>/^(anthropic|openai|google|x-ai|deepseek)\//.test(m.id)&&!/:/.test(m.id)&&blended(m)>0).sort((a,b)=>a.id.localeCompare(b.id));const cur=refModel();$('#sRef').innerHTML=cands.map(m=>`<option value="${esc(m.id)}" ${cur&&m.id===cur.id?'selected':''}>${esc(m.name)}</option>`).join('')}
+$('#refreshModels').onclick=async()=>{toast('Refreshing…');await fetchModels(true);toast(MODELS.length+' models loaded');if(S.model)setModel(S.model)};
+$('#wipe').onclick=async()=>{if(!confirm('Delete all chats, memory, settings and keys from this device?'))return;await DB.clear('convs');await DB.clear('kv');location.reload()};
+(()=>{const foot=$('#drawerFoot');const mk=(t,cls,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.textContent=t;b.onclick=fn;return b};foot.prepend(mk('Download this chat (.md)','ghost',()=>{if(!CUR||!CUR.messages.length)return toast('Nothing to save yet');download(safeName(CUR.title)+'.md',new Blob([convToMd(CUR)],{type:'text/markdown'}))}));foot.prepend(mk('Save this chat to Obsidian','',saveToObsidian))})();
+
+/* ---------- brand, help, tour ---------- */
+const LOGO=`<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="kg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--second)"/></linearGradient></defs><path d="M17 12v40" stroke="url(#kg)" stroke-width="9" stroke-linecap="round"/><path d="M45 14 24 32l21 18" stroke="url(#kg)" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="32" r="5" fill="var(--second)"/></svg>`;
+document.querySelectorAll('.logo').forEach(l=>l.innerHTML=LOGO);
+const HELP=[['Pick the room, not the model','Tap the model name up top. Filter by tier (Light for chatter, Everyday for building, Deep when it matters) and by what you\'re doing. Every model shows what a typical turn costs and how many you get a day at your budget. Star favorites; Compare lines up four side by side.'],['Stay inside the budget','Set monthly and daily caps in Settings → Budget. The ribbon fills as you spend; under the composer you see what the next send will cost before you hit it. Anything over your threshold asks first; deep models ask once per chat. Also set a credit limit on the key itself at openrouter.ai/keys — that\'s the hard wall.'],['Compact instead of starting over','Every turn resends the whole chat, so long chats get expensive. When context passes your threshold a Compact button appears: a cheap helper model folds the older half into a briefing and the chat continues. Old attachments stop being re-sent after a couple of turns automatically.'],['Just talk','Type, or tap the mic to dictate for free. Hold the waveform to record a real voice note for an audio-capable model. Cmd/Ctrl+Enter sends on a keyboard.'],['Ask for files','"Make me a spreadsheet of…", "build an HTML slide deck", "give me a PDF" — a download card appears under the reply. Attach PDFs, spreadsheets, docs, code or images and it reads them.'],['Memory that ages','Settings → Memory. Every fact carries its last-updated date so the model knows what\'s stale. Say "remember that…" and it files it; import Claude Code memory files (.md) or JSON from anywhere.'],['Watch the meter','The ribbon shows what this chat cost, the last exchange, all time, and how full the context window is. Every reply shows its own cost.'],['Effects','Hold Send to load pop, slam, shake, glow, whisper or confetti onto your next message. The agent uses them too, sparingly.'],['Second opinions','Under any reply: Listen, Copy, Retry, or Another model to re-run the same question elsewhere without switching your default. Edit any of your own messages to branch from there.'],['Save to Obsidian','From the chat drawer: Save this chat to Obsidian creates a Markdown note with frontmatter in AI Chats/. Memory can go there too. Export JSON for a full backup.'],['Mood','Six themes in Settings → Look. The sun/moon in the drawer flips between your last night and day theme.']];
+$('#helpBody').innerHTML=HELP.map(([t,d],i)=>`<div class="step"><div class="n">${i+1}</div><div><b>${t}</b><p>${d}</p></div></div>`).join('')+'<p class="hint" style="margin:14px 0 0;font-size:12px">Kinfolk runs entirely in this page. Your keys and chats stay on this device and go only to the providers you call.</p>';
+$('#helpBtn').onclick=()=>openSheet('helpSheet');
+$('#helpTour').onclick=async()=>{closeSheets();const stops=[['#modelBtn','Tap here to pick a model.'],['#rDay','Budget meters: today and this month.'],['#est','Estimated cost of your next send.'],['#fileBtn','Attach files.'],['#dictateBtn','Dictate for free.'],['#recBtn','Hold to record a voice note.'],['#send','Tap to send. Hold for effects.'],['#menuBtn','Your chats, Obsidian and backups.'],['#settingsBtn','Memory, themes, keys, voice.']];for(const[sel,txt]of stops){const el=$(sel);if(!el)continue;el.style.outline='3px solid var(--second)';el.style.outlineOffset='3px';el.style.borderRadius='12px';toast(txt);await new Promise(r=>setTimeout(r,1900));el.style.outline='';el.style.outlineOffset=''}toast('That\'s the tour.')};
+
+/* ---------- boot ---------- */
+(async()=>{try{await loadMem();await loadSettings()}catch(e){toast('Storage unavailable — chats won\'t persist. Export often.')}
+  setTheme(S.theme||'afterhours');
+  fetchModels().then(()=>{if(S.model)setModel(S.model);if(!S.model&&MODELS.length)setModel('openrouter/auto');renderChat()});
+  await loadConvs();newConv();if(!S.apiKey)openSheet('settingsSheet');else if(!S.sawHelp){S.sawHelp=true;saveSettings();openSheet('helpSheet')}})();
+</script>
+<script>
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+let installEvt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;const foot=document.getElementById('drawerFoot');if(foot&&!document.getElementById('installBtn')){const b=document.createElement('button');b.className='btn primary';b.id='installBtn';b.textContent='Install Kinfolk on this phone';b.onclick=async()=>{installEvt.prompt();await installEvt.userChoice;b.remove()};foot.prepend(b)}});
+</script>
+</body>
+</html>
