@@ -1,5 +1,7 @@
 # Changelog
 
+- v51 — Drawl dial: shapes text for the voice only (word choice, dropped g's, cadence); screen stays plain. Whisper request minimized with fallback endpoint and real error text.
+
 - v50 — Talk mode: continuous voice conversation with barge-in. Whisper turns, sentence-by-sentence Kokoro playback, cut him off any time.
 
 - v49 — Dictation rebuilt: raw audio capture with a live waveform, transcribed by Whisper on fal in slices as you talk; browser engine kept only as a preview or fallback.
