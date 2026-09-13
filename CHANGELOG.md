@@ -1,5 +1,9 @@
 # Changelog
 
+- v50 — Talk mode: continuous voice conversation with barge-in. Whisper turns, sentence-by-sentence Kokoro playback, cut him off any time.
+
+- v49 — Dictation rebuilt: raw audio capture with a live waveform, transcribed by Whisper on fal in slices as you talk; browser engine kept only as a preview or fallback.
+
 - v48 — Enter sends on desktop (Shift+Enter for a newline); timestamps and Delete on messages; pin chats to the top; `/pin`. Added KINFOLK.md (the DNA) and this changelog.
 - v47 — Picker inverted: one model, with ✓ what it handles and ⚠ what it calls out for; orchestrator only offers tools for the gaps. Agent 0.3: context compaction and streaming long-running commands.
 - v46 — Photos and clips you send show in the thread; lightbox; Send again.
