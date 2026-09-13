@@ -1,5 +1,7 @@
 # Changelog
 
+- v52 — Eye and copy buttons on every key; Copy all keys / Paste keys to move a whole setup between devices in one line.
+
 - v51 — Drawl dial: shapes text for the voice only (word choice, dropped g's, cadence); screen stays plain. Whisper request minimized with fallback endpoint and real error text.
 
 - v50 — Talk mode: continuous voice conversation with barge-in. Whisper turns, sentence-by-sentence Kokoro playback, cut him off any time.
