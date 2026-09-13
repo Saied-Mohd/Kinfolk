@@ -1,5 +1,15 @@
 # Changelog
 
+- v57 — Agent card explains the https→http block and how to tunnel instead of showing nothing; agent prints the tunnel hint.
+
+- v56 — Database upgrade forced so the projects table always exists; startup loads survive each other failing and the drawer draws regardless.
+
+- v55 — Chat saves now report failure instead of silently dropping the chat; storage self-test and big-chat finder in Session & data.
+
+- v54 — Asks Chrome for persistent storage; Session & data shows where this copy lives, how many chats it holds, and whether storage is protected.
+
+- v53 — Dictation audio uploads to fal storage before Whisper (fixes "Unsupported data URL"); falls back to the voice-lane model if fal refuses.
+
 - v52 — Eye and copy buttons on every key; Copy all keys / Paste keys to move a whole setup between devices in one line.
 
 - v51 — Drawl dial: shapes text for the voice only (word choice, dropped g's, cadence); screen stays plain. Whisper request minimized with fallback endpoint and real error text.
