@@ -1,5 +1,7 @@
 # Changelog
 
+- v58 — Version shown in the drawer and at the top of Settings, with database version, tables present, and any startup error.
+
 - v57 — Agent card explains the https→http block and how to tunnel instead of showing nothing; agent prints the tunnel hint.
 
 - v56 — Database upgrade forced so the projects table always exists; startup loads survive each other failing and the drawer draws regardless.
