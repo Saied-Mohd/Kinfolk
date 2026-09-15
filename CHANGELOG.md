@@ -1,5 +1,9 @@
 # Changelog
 
+- v60 — Sync button in the drawer: reloads chats, projects, memory, models, keys and the agent, and reports exactly what it found. Also re-reads whenever you come back to the app.
+
+- v59 — Drawer re-reads chats and projects every time it opens; startup records how many it found and retries once.
+
 - v58 — Version shown in the drawer and at the top of Settings, with database version, tables present, and any startup error.
 
 - v57 — Agent card explains the https→http block and how to tunnel instead of showing nothing; agent prints the tunnel hint.
