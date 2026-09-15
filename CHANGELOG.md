@@ -1,5 +1,9 @@
 # Changelog
 
+- v62 — Drawer has Chats / Agent tabs; agent panel scrolls, browses folders and starts a session in any folder (empty ones too, with optional git init). Four modes: Plan, Ask, Auto, Bypass. Dropped agent connections offer Reconnect to live session instead of an error. More of his sayings.
+
+- v61 — **The persistence bug.** Boot called loadLabel(), which had been lost in an earlier patch; the ReferenceError killed startup before chats, projects, the drawer or the agent ever loaded. Label module restored, boot no longer dies on a missing piece, and any uncaught error now shows as a toast instead of nothing.
+
 - v60 — Sync button in the drawer: reloads chats, projects, memory, models, keys and the agent, and reports exactly what it found. Also re-reads whenever you come back to the app.
 
 - v59 — Drawer re-reads chats and projects every time it opens; startup records how many it found and retries once.
